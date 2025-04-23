@@ -35,8 +35,8 @@ export function NavMain({
   }[]
 }) {
   return (
-    <SidebarGroup dir="rtl">
-      <SidebarGroupLabel>الملفات القضائية</SidebarGroupLabel>
+    <SidebarGroup >
+      <SidebarGroupLabel>Contrats d'assurance</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>

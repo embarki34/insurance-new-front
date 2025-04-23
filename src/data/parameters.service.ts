@@ -1,5 +1,6 @@
 import axiosInstance from "@/config/axios"
-import { Parameter } from "@/lib/types"
+import { parameter } from "@/lib/output-Types"
+import { parameterInput } from "@/lib/input-Types"
 
 
 
@@ -11,8 +12,9 @@ const endpoint = "/parameters"
 
 
 
-export const getParameters = async (): Promise<Parameter[]> => {
-  const response = await axiosInstance.get<Parameter[]>(`${endpoint}`)
+export const getParameters = async (): Promise<parameter[]> => {
+  const response = await axiosInstance.get<parameter[]>(`${endpoint}`)
+  console.log(response.data)
   return response.data
 }
 
@@ -37,7 +39,7 @@ export const createParameter = async (formData: {
 }
 
 
-export const updateParameter = async (id: string, data: Parameter) => {
+export const updateParameter = async (id: string, data: parameterInput) => {
   const response = await axiosInstance.put(`${endpoint}/${id}`, data)
   return response.data
 }

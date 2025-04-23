@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-import { Pagination } from '@/lib/types'
+import { pagination as paginationType } from '@/lib/output-Types'
 interface PaginationProps {
-    pagination: Pagination
+    pagination: paginationType
 }
 
 const  pagination: React.FC<PaginationProps> = ({ pagination }) => {

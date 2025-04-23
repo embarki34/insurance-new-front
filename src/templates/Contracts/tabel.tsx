@@ -30,21 +30,29 @@ import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Case } from "@/lib/types"
 import { useNavigate } from "react-router-dom"
+import { contract  } from "@/lib/output-Types"
 
+
+
+  
 function TableComponent({
-  cases = [],
+  contracts,
+  onEdit,
+  onDelete,
   isLoading = false,
-  onEdit = (_id:string) => {},
-  onDelete = (_id:string) => {},
+}: {
+  contracts: contract[];
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  isLoading?: boolean;
 }) {
-  const [sortBy, setSortBy] = useState<keyof Case>("id")
+  const [sortBy, setSortBy] = useState<keyof contract>("id")
   const [sortOrder, setSortOrder] = useState("asc")
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null)
+  const [selectedCase, setSelectedCase] = useState<contract | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const router = useNavigate()
-  const handleSort = (column: keyof Case) => {
+  const handleSort = (column: keyof contract) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
     } else {
@@ -53,7 +61,7 @@ function TableComponent({
     }
   }
 
-  const sortedData = [...cases].sort((a, b) => {
+  const sortedData = [...contracts].sort((a, b) => {
     if (!a[sortBy] || !b[sortBy]) return 0
     
     if (sortOrder === "asc") {
@@ -63,8 +71,8 @@ function TableComponent({
     }
   })
 
-  const openDetails = (caseItem: Case) => {
-    router(`/cases/${caseItem.id}`, { state: caseItem })
+  const openDetails = (caseItem: contract) => {
+    router(`/contracts/${caseItem.id}`, { state: caseItem })
     setSelectedCase(caseItem)
   }
 
@@ -76,7 +84,7 @@ function TableComponent({
     )
   }
 
-  if (cases.length === 0) {
+  if (contracts.length === 0) {
     return (
       <div className="w-full flex flex-col items-center justify-center py-12">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
@@ -106,11 +114,11 @@ function TableComponent({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("title")}
+                onClick={() => handleSort("name")}
               >
                 <div className="flex items-center">
                   العنوان
-                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "title" ? "opacity-100" : "opacity-50"}`} />
+                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "name" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
               <TableHead>التفاصيل</TableHead>
@@ -118,34 +126,34 @@ function TableComponent({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((caseItem: Case, index: number) => (
+            {sortedData.map((contractItem: contract, index: number) => (
               <TableRow
-                key={caseItem.id}
+                key={contractItem.id}
                 className="hover:bg-muted/50 transition-colors"
               >
                 <TableCell className="text-center font-medium text-muted-foreground">{index + 1}</TableCell>
                 <TableCell className="font-mono text-sm">
                   <Badge variant="outline" className="font-mono">
-                    {caseItem.id}
+                    {contractItem.id}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-medium">{caseItem.title}</TableCell>
+                <TableCell className="font-medium">{contractItem.name}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1 max-w-xs">
-                    {Array.isArray(caseItem.description) ? (
-                      caseItem.description.map((description: string, i: number) => (
+                    {Array.isArray(contractItem.description) ? (
+                      contractItem.description.map((description: string, i: number) => (
                         <Badge key={i} variant="secondary" className="text-xs">
                           {description}
                         </Badge>
                       ))
                     ) : (
                       <Badge variant="secondary" className="text-xs">
-                        {caseItem.description}
+                        {contractItem.description}
                       </Badge>
                     )}
-                    {Array.isArray(caseItem.description) && caseItem.description.length > 3 && (
+                    {Array.isArray(contractItem.description) && contractItem.description.length > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{caseItem.description.length - 3}
+                        +{contractItem.description.length - 3}
                       </Badge>
                     )}
                   </div>
@@ -158,7 +166,7 @@ function TableComponent({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => openDetails(caseItem)}
+                            onClick={() => openDetails(contractItem)}
                             className="w-24 h-8 p-0 bg-primary text-primary-foreground hover:bg-primary/90 text-sm hover:text-primary-foreground/90 text-center"
                           >
                              التفاصيل
@@ -176,7 +184,7 @@ function TableComponent({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => onEdit(caseItem.id)} 
+                            onClick={() => onEdit?.(contractItem.id)} 
                             className="w-8 h-8 p-0"
                           >
                             <Pen className="h-4 w-4" />
@@ -194,7 +202,7 @@ function TableComponent({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => onDelete(caseItem.id)}
+                            onClick={() => onDelete?.(contractItem.id)}
                             className="w-8 h-8 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           >
                             <Trash className="h-4 w-4" />
@@ -245,7 +253,7 @@ function TableComponent({
                       </div>
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">العنوان</p>
-                        <p className="font-medium mt-1">{selectedCase.title}</p>
+                        <p className="font-medium mt-1">{selectedCase.name}</p>
                       </div>
                     </div>
                   </CardContent>

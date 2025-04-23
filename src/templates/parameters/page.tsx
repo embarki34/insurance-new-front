@@ -10,17 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
 import { getParameters, deleteParameter } from "@/data/parameters.service"
-import  { Parameter } from "@/lib/types"
+import { parameter } from "@/lib/output-Types"
 import AddParameter from "./add"
 import Tabel from "./tabel"
 import { toast } from "sonner"
 
-
-
-
 function parameters() {
-  const [noticeProcessTypes, setNoticeProcessTypes] = useState<Parameter[]>([])
-  const [filteredTypes, setFilteredTypes] = useState<Parameter[]>([])
+  const [noticeProcessTypes, setNoticeProcessTypes] = useState<parameter[]>([])
+  const [filteredTypes, setFilteredTypes] = useState<parameter[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [refresh, setRefresh] = useState(false)
@@ -33,7 +30,7 @@ function parameters() {
         setNoticeProcessTypes(types)
         setFilteredTypes(types)
       } catch (error) {
-        toast.error("حدث خطأ أثناء جلب البيانات")
+        toast.error("Une erreur est survenue lors de la récupération des données")
         console.error("Error fetching parameters:", error)
       } finally {
         setIsLoading(false)
@@ -61,15 +58,15 @@ function parameters() {
     try {
       await deleteParameter(id)
       setRefresh(!refresh)
-      toast.success("تم حذف المعامل بنجاح")
+      toast.success("Le paramètre a été supprimé avec succès")
     } catch (error) {
       console.error("Error deleting parameter:", error)
-      toast.error("حدث خطأ أثناء حذف المعامل")
+      toast.error("Une erreur est survenue lors de la suppression du paramètre")
     }
   }
 
-    const confirmDelete = (id: string) => {
-    if (window.confirm("هل أنت متأكد من رغبتك في حذف هذا المعامل؟")) {
+  const confirmDelete = (id: string) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce paramètre ?")) {
       deleteNoticeProcessTypeFromTable(id)
     }
   }
@@ -84,7 +81,7 @@ function parameters() {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto py-6 px-4 md:px-6">
         {/* Header Section */}
         <div className="mb-6">
@@ -92,10 +89,10 @@ function parameters() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Settings className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold tracking-tight">إعدادات المعاملات</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Paramètres des transactions</h2>
               </div>
               <p className="text-sm text-muted-foreground">
-                إضافة، إزالة، وإدارة إعدادات المعاملات والقيم المسموح بها.
+                Ajouter, supprimer et gérer les paramètres des transactions et les valeurs autorisées.
               </p>
             </div>
             <AddParameter onAdd={handleAdd} />
@@ -106,21 +103,19 @@ function parameters() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>إجمالي المعاملات</CardDescription>
+              <CardDescription>Total des transactions</CardDescription>
               <CardTitle className="text-2xl">
                 {isLoading ? <Skeleton className="h-8 w-16" /> : noticeProcessTypes.length}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xs text-muted-foreground">تم التحديث {new Date().toLocaleDateString("fr-FR")}</div>
+              <div className="text-xs text-muted-foreground">Mis à jour {new Date().toLocaleDateString("fr-FR")}</div>
             </CardContent>
           </Card>
 
-          
-
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>إجمالي القيم</CardDescription>
+              <CardDescription>Total des valeurs</CardDescription>
               <CardTitle className="text-2xl">
                 {isLoading ? (
                   <Skeleton className="h-8 w-16" />
@@ -131,14 +126,14 @@ function parameters() {
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                متوسط{" "}
+                Moyenne{" "}
                 {isLoading
                   ? "-"
                   : Math.round(
                       noticeProcessTypes.reduce((acc, type) => acc + type.values.length, 0) /
                         (noticeProcessTypes.length || 1),
                     )}{" "}
-                قيمة لكل معامل
+                valeur par paramètre
               </div>
             </CardContent>
           </Card>
@@ -151,14 +146,14 @@ function parameters() {
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Paperclip className="h-4 w-4 text-primary" />
-                  قائمة المعاملات
+                  Liste des paramètres
                 </CardTitle>
                 <CardDescription>
                   {isLoading ? (
                     <Skeleton className="h-4 w-24 mt-1" />
                   ) : (
                     <span>
-                      {filteredTypes.length} من {noticeProcessTypes.length} معامل
+                      {filteredTypes.length} sur {noticeProcessTypes.length} paramètres
                     </span>
                   )}
                 </CardDescription>
@@ -169,7 +164,7 @@ function parameters() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="بحث عن معامل..."
+                    placeholder="Rechercher un paramètre..."
                     className="w-full pl-8 bg-background"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
@@ -178,7 +173,7 @@ function parameters() {
 
                 <Button variant="outline" size="icon" className="shrink-0">
                   <Filter className="h-4 w-4" />
-                  <span className="sr-only">تصفية</span>
+                  <span className="sr-only">Filtrer</span>
                 </Button>
               </div>
             </div>
@@ -205,15 +200,15 @@ function parameters() {
                   <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
                     <AlertCircle className="h-10 w-10 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-medium">لا توجد نتائج</h3>
+                  <h3 className="text-lg font-medium">Aucun résultat</h3>
                   <p className="text-muted-foreground mt-1 max-w-md">
                     {searchQuery
-                      ? "لم يتم العثور على أي معاملات تطابق معايير البحث الخاصة بك."
-                      : "لا توجد معاملات متاحة حالياً. يمكنك إضافة معامل جديد باستخدام زر الإضافة."}
+                      ? "Aucun paramètre ne correspond à vos critères de recherche."
+                      : "Aucun paramètre disponible actuellement. Vous pouvez ajouter un nouveau paramètre en utilisant le bouton d'ajout."}
                   </p>
                   {searchQuery && (
                     <Button variant="outline" className="mt-4" onClick={() => setSearchQuery("")}>
-                      إعادة ضبط البحث
+                      Réinitialiser la recherche
                     </Button>
                   )}
                 </div>
@@ -231,11 +226,11 @@ function parameters() {
 
           <CardFooter className="flex items-center justify-between border-t p-4 bg-muted/30">
             <div className="text-sm text-muted-foreground">
-              عرض {filteredTypes.length} من {noticeProcessTypes.length} معامل
+              Affichage de {filteredTypes.length} sur {noticeProcessTypes.length} paramètres
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
-                آخر تحديث: {new Date().toLocaleTimeString("fr-FR")}
+                Dernière mise à jour : {new Date().toLocaleTimeString("fr-FR")}
               </Badge>
             </div>
           </CardFooter>

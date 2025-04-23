@@ -1,10 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Cases from './templates/cases/page';
+// import Cases from './templates/Contracts/page';
 import Parameters from './templates/parameters/page';
-import CasePage from './templates/cases/[id]/page';
+// import CasePage from './templates/Contracts/[id]/page';
 import { NotFoundPage } from './Not-Found';
-
+import Contracts from './templates/Contracts/page';
+import Objects from './templates/objects/page';
 const InvalidRoute = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <div className="max-w-lg w-full mx-4 p-8 bg-white rounded-2xl shadow-xl space-y-8">
@@ -44,8 +45,9 @@ const AppRoutes: React.FC = () => {
 
       {/* pages */}
       <Route path="/" element={<Navigate to="/cases" replace />} />
-      <Route path="/cases" element={<Cases />} />
-      <Route path="/cases/:id" element={<CasePage />} />
+      <Route path="/contracts" element={<Contracts />} />
+      <Route path="/objects" element={<Objects />} />
+      {/* <Route path="/cases/:id" element={<CasePage />} /> */}
 
 
 

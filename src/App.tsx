@@ -12,7 +12,7 @@ function App() {
   // const { i18n } = useTranslation();
   
   return (
-    <div className="App" dir="rtl">
+    <div className="App" >
       <Toaster
         position="top-center"
         richColors

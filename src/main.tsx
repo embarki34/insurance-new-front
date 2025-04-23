@@ -16,13 +16,13 @@ root.render(
     <BrowserRouter>
       <I18nextProvider i18n={i18n}>
         <SidebarProvider>
-          <div className="flex flex-row-reverse w-full">
-            <AppSidebar side="right" />
+          {/* <div className="flex flex-row-reverse w-full"> */}
+            <AppSidebar side="left" />
             <SidebarInset className="flex-1 min-w-0">
               <SidebarTrigger />
               <App />
             </SidebarInset>
-          </div>
+          {/* </div> */}
         </SidebarProvider>
       </I18nextProvider>
     </BrowserRouter>

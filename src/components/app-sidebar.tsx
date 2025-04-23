@@ -21,8 +21,6 @@ import {
 } from "@/components/ui/sidebar"
 import { NavSettings } from "@/components/nav-settings"
 
-
-
 const data = {
   user: {
     name: "شادن",
@@ -31,52 +29,51 @@ const data = {
   },
   navMain: [
     {
-      title: "الملفات القضائية",
-      url: "/cases",
+      title: "Contrats d'assurance",
+      url: "/contracts",
       icon: Briefcase,
-      },
-      
-    ],
-    navSecondary: [
+    },
     {
-      title: "الدعم",
+      title: "Objets",
+      url: "/objects",
+      icon: Send,
+    },
+  ],
+  navSecondary: [
+    {
+      title: "Support",
       url: "#",
       icon: LifeBuoy,
     },
     {
-      title: "التعليقات",
+      title: "Commentaires",
       url: "#",
       icon: Send,
     },
   ],
   navSettings: [
     {
-      title: " إعدادات المُعاملات",
+      title: "Paramètres des transactions",
       icon: Settings2,
-      url:"/settings/parameters",
-      items:[
-        
-      ],
+      url: "/settings/parameters",
+      items: [],
     },
-    
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-return (
-  <Sidebar variant="floating" {...props}>
+  return (
+    <Sidebar variant="floating" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/cases">
+              <a href="/contracts">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  {/* <Command className="size-4" /> */}
                   <FileText />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium text-right"> ادارة الملفات القضائية</span>
-                  <span className="truncate text-xs text-right">الإدارة القضائية</span>
+                  <span className="truncate font-medium text-right">Gestion des contrats d'assurance</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -86,9 +83,6 @@ return (
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavSettings items={data.navSettings} />
-        {/* <NavProjects projects={data.} /> */}
-      
-
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

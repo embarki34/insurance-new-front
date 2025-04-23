@@ -1,94 +1,66 @@
-"use client"
-
-import { Suspense, useEffect, useState } from "react"
-import { Search, Filter, AlertCircle, Paperclip,File } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import AddContract from "./add"
+import TableComponent from "./tabel"
+import { useState, useEffect, Suspense } from "react"
+import { deleteContract, getContracts } from "@/data/contracts.service"
+import { contract } from "@/lib/output-Types"
+import { toast } from "sonner"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Pagination from "../parameters/pagination"
+import { File, Search, Filter, AlertCircle, Paperclip } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
-import { getCases, deleteCase, createCase } from "@/data/cases.service"
-import { Case } from "@/lib/types"
-import AddCase from "./add"
-import Table from "./tabel"
-import { toast } from "sonner"
-import Pagination from "./pagination"
-import { Pagination as PaginationType } from "@/lib/types"
+import { pagination as paginationType } from "@/lib/output-Types"
+import AddCase from "./newAdd"
+import CreateObjects from "../objects/creatObjects"
 
 
-function Cases() {
-  const [caseList, setCaseList] = useState<Case[]>([])
-  const [filteredCases, setFilteredCases] = useState<Case[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
+
+
+
+
+
+
+
+
+
+
+
+export default function Contracts() {
+  const [contracts, setContracts] = useState<contract[]>([])
   const [refresh, setRefresh] = useState(false)
-  const [pagination, setPagination] = useState<PaginationType>()
+  const [isLoading, setIsLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [pagination, setPagination] = useState<paginationType | null>(null)
 
   useEffect(() => {
-    const fetchCases = async () => {
+    const fetchContracts = async () => {
       setIsLoading(true)
-      try {
-        const cases = await getCases()
-        setCaseList(cases.cases)
-        setFilteredCases(cases.cases)
-        setPagination({
-          currentPage: cases.pagination.currentPage,
-          totalPages: cases.pagination.totalPages,
-          totalItems: cases.pagination.totalItems,
-          itemsPerPage: cases.pagination.itemsPerPage,
-        })
-      } catch (error) {
-        toast.error("حدث خطأ أثناء جلب البيانات")
-        console.error("Error fetching cases:", error)
-      } finally {
-        setIsLoading(false)
-      }
+      const { contracts, pagination } = await getContracts()
+      setContracts(contracts)
+      setPagination(pagination)
+      setIsLoading(false)
     }
-
-    fetchCases()
+    fetchContracts()
   }, [refresh])
 
-  useEffect(() => {
-    // Filter based on search query
-    if (searchQuery) {
-      const filtered = caseList.filter(
-        (caseItem) =>
-          caseItem.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          caseItem.id?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      setFilteredCases(filtered)
-    } else {
-      setFilteredCases(caseList)
-    }
-  }, [searchQuery, caseList])
-
-  const deleteCaseFromTable = async (id: string) => {
+  const handleDeleting = async (id: string) => {
     try {
-      await deleteCase(id)
-      setRefresh(!refresh)
-      toast.success("تم حذف القضية بنجاح")
+      await deleteContract(id)
+      toast.success("Contrat supprimé avec succès")
     } catch (error) {
-      console.error("Error deleting case:", error)
-      toast.error("حدث خطأ أثناء حذف القضية")
+      toast.error("Échec de la suppression du contrat")
     }
   }
 
-  const confirmDelete = (id: string) => {
-    if (window.confirm("هل أنت متأكد من رغبتك في حذف هذه القضية؟")) {
-      deleteCaseFromTable(id)
-    }
+  const handleEditing = (id: string) => {
+    console.log(id)
   }
-
-  const handleAdd = async () => {
-    try {
-      toast.success("تم إضافة القضية بنجاح")
-      setRefresh(!refresh)
-    } catch (error) {
-      setRefresh(!refresh)
-      toast.error("حدث خطأ أثناء إضافة القضية")
-    }
+  const handleAdding = () => {
+    setRefresh(!refresh)
   }
 
   const handleSearch = (query: string) => {
@@ -96,78 +68,87 @@ function Cases() {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background " >
       <div className="container mx-auto py-6 px-4 md:px-6">
-        {/* Header Section */}
+        {/* Section d'en-tête */}
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <File className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold tracking-tight"> القضايا</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Contrats d'assurance</h2>
               </div>
               <p className="text-sm text-muted-foreground">
-                إضافة، إزالة، وإدارة القضايا.
+                Ajouter, supprimer et gérer les contrats d'assurance.
               </p>
             </div>
-            <AddCase onAdd={handleAdd} />
+            {/* <AddContract onAdd={handleAdding} /> */}
+
+            <CreateObjects
+              onObjectsCreated={(objects) => {
+                // Do something with the created objects
+                console.log("Created objects:", objects);
+                handleAdding()
+              }}
+            />
+            <AddCase onAdd={handleAdding} />
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Cartes de statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>إجمالي القضايا</CardDescription>
+              <CardDescription>Total des contrats d'assurance</CardDescription>
               <CardTitle className="text-2xl">
-                {isLoading ? <Skeleton className="h-8 w-16" /> : caseList.length}
+                {isLoading ? <Skeleton className="h-8 w-16" /> : contracts.length}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xs text-muted-foreground">تم التحديث {new Date().toLocaleDateString("fr-FR")}</div>
+              <div className="text-xs text-muted-foreground">Dernière mise à jour {new Date().toLocaleDateString("fr-FR")}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>إجمالي الحالات</CardDescription>
+              <CardDescription>Total des contrats d'assurance</CardDescription>
               <CardTitle className="text-2xl">
                 {isLoading ? (
                   <Skeleton className="h-8 w-16" />
                 ) : (
-                  caseList.length
+                  contracts.length
                 )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                متوسط{" "}
+                Moyenne{" "}
                 {isLoading
                   ? "-"
                   : Math.round(
-                    caseList.length / (caseList.length || 1),
+                    contracts.length / (contracts.length || 1),
                   )}{" "}
-                حالة لكل قضية
+                contrat par contrat
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
+        {/* Contenu principal */}
         <Card className="overflow-hidden border-border/40 shadow-sm">
           <CardHeader className="bg-muted/50 pb-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Paperclip className="h-4 w-4 text-primary" />
-                  قائمة القضايا
+                  Liste des contrats d'assurance
                 </CardTitle>
                 <CardDescription>
                   {isLoading ? (
                     <Skeleton className="h-4 w-24 mt-1" />
                   ) : (
                     <span>
-                      {filteredCases.length} من {caseList.length} قضية
+                      {contracts.length} sur {contracts.length} contrat
                     </span>
                   )}
                 </CardDescription>
@@ -178,7 +159,7 @@ function Cases() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="بحث عن قضية..."
+                    placeholder="Rechercher un contrat..."
                     className="w-full pl-8 bg-background"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
@@ -187,7 +168,7 @@ function Cases() {
 
                 <Button variant="outline" size="icon" className="shrink-0">
                   <Filter className="h-4 w-4" />
-                  <span className="sr-only">تصفية</span>
+                  <span className="sr-only">Filtrer</span>
                 </Button>
               </div>
             </div>
@@ -205,32 +186,32 @@ function Cases() {
             >
               {isLoading ? (
                 <div className="p-6 space-y-4">
-                  {[1, 2, 3, 4,5,6,7,8,9,10].map((i) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                   ))}
                 </div>
-              ) : filteredCases.length === 0 ? (
+              ) : contracts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                   <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
                     <AlertCircle className="h-10 w-10 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-medium">لا توجد نتائج</h3>
+                  <h3 className="text-lg font-medium">Aucun résultat</h3>
                   <p className="text-muted-foreground mt-1 max-w-md">
                     {searchQuery
-                      ? "لم يتم العثور على أي قضايا تطابق معايير البحث الخاصة بك."
-                      : "لا توجد قضايا متاحة حالياً. يمكنك إضافة قضية جديدة باستخدام زر الإضافة."}
+                      ? "Aucun contrat ne correspond à vos critères de recherche."
+                      : "Aucun contrat disponible actuellement. Vous pouvez ajouter un nouveau contrat en utilisant le bouton d'ajout."}
                   </p>
                   {searchQuery && (
                     <Button variant="outline" className="mt-4" onClick={() => setSearchQuery("")}>
-                      إعادة ضبط البحث
+                      Réinitialiser la recherche
                     </Button>
                   )}
                 </div>
               ) : (
                 <div className="p-6">
-                  <Table
-                    cases={filteredCases as any}
-                    onDelete={confirmDelete}
+                  <TableComponent
+                    contracts={contracts}
+                    onDelete={handleDeleting}
                     isLoading={isLoading}
                   />
                   {pagination && <Pagination pagination={pagination} />}
@@ -241,18 +222,16 @@ function Cases() {
 
           <CardFooter className="flex items-center justify-between border-t p-4 bg-muted/30">
             <div className="text-sm text-muted-foreground">
-              عرض {filteredCases.length} من {caseList.length} قضية
+              Affichage de {contracts.length} sur {contracts.length} contrat
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
-                آخر تحديث: {new Date().toLocaleTimeString("fr-FR")}
+                Dernière mise à jour: {new Date().toLocaleTimeString("fr-FR")}
               </Badge>
             </div>
           </CardFooter>
         </Card>
       </div>
     </div>
-  )
+  );
 }
-
-export default Cases

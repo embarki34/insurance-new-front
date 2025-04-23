@@ -34,8 +34,8 @@ export function NavSettings({
   }[]
 }) {
   return (
-    <SidebarGroup dir="rtl" className="mt-120">
-      <SidebarGroupLabel>الإعدادات</SidebarGroupLabel>
+    <SidebarGroup  className="mt-120">
+      <SidebarGroupLabel>Paramètres</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>

@@ -68,21 +68,21 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
       setAvailableParameters(transformedParams as any)
     } catch (error) {
       console.error("Error fetching parameters:", error)
-      toast.error("فشل في جلب المعاملات المتاحة")
+      toast.error("Échec de la récupération des paramètres disponibles")
     } finally {
       setIsLoading(false)
     }
   }
 
   const validateKey = (key: string) => {
-    if (!key) return "المعرف مطلوب"
-    if (key.includes(" ")) return "المعرف لا يجب أن يحتوي على مسافات"
-    if (!/^[\u0621-\u064A0-9_]+$/.test(key)) return "المعرف يجب أن يحتوي على أحرف عربية وأرقام وشرطة سفلية فقط"
+    if (!key) return "La clé est requise"
+    if (key.includes(" ")) return "La clé ne doit pas contenir d'espaces"
+    if (!/^[a-zA-Z0-9_]+$/.test(key)) return "La clé doit contenir uniquement des lettres, des chiffres et des traits de soulignement"
     return ""
   }
 
   const validateLabel = (label: string) => {
-    if (!label) return "التسمية مطلوبة"
+    if (!label) return "L'étiquette est requise"
     return ""
   }
 
@@ -110,7 +110,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     const { id, value } = e.target
 
     if (id === "label") {
-      // Auto-generate key from label, allowing for Arabic values
+      // Auto-generate key from label
       const generatedKey = formatKeyExample(value)
       setNewValue((prev) => ({
         ...prev,
@@ -157,7 +157,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
 
   const addLinkedParam = () => {
     if (!newLinkedParam.param_key || newLinkedParam.allowed_values.length === 0) {
-      toast.error("يرجى تحديد معامل وقيم مسموح بها")
+      toast.error("Veuillez sélectionner un paramètre et des valeurs autorisées")
       return
     }
 
@@ -182,12 +182,12 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
 
   const addValue = () => {
     if (!newValue.key || !newValue.label) {
-      toast.error("يرجى إدخال المعرف والقيمة")
+      toast.error("Veuillez entrer la clé et la valeur")
       return
     }
 
     if (valueKeyError) {
-      toast.error("يرجى تصحيح أخطاء المعرف")
+      toast.error("Veuillez corriger les erreurs de clé")
       return
     }
 
@@ -235,7 +235,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     setLabelError(labelErr)
 
     if (keyErr || labelErr || paramData.values.length === 0) {
-      toast.error("يرجى تصحيح الأخطاء قبل الحفظ")
+      toast.error("Veuillez corriger les erreurs avant de sauvegarder")
       return
     }
 
@@ -255,14 +255,14 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
         allowLinkedParams: true,
       })
 
-      toast.success("تم الإضافة بنجاح", {
-        description: "تمت إضافة نوع إجراء الملاحظة بنجاح",
+      toast.success("Ajout réussi", {
+        description: "Le type d'action a été ajouté avec succès",
       })
       setOpen(false)
     } catch (error) {
       console.error("Error creating parameter:", error)
-      toast.error("حدث خطأ أثناء إضافة المعامل", {
-        description: "حدث خطأ أثناء العملية",
+      toast.error("Une erreur s'est produite lors de l'ajout du paramètre", {
+        description: "Une erreur s'est produite pendant le processus",
       })
     } finally {
       setIsSubmitting(false)
@@ -275,55 +275,49 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   const formatKeyExample = (text: string) => {
-    const isArabic = /[\u0600-\u06FF]/.test(text);
-    
     return text
       .toLowerCase()
       .replace(/\s+/g, '_')
-      .replace(isArabic ? 
-        /[^\u0600-\u06FF0-9_]/g : // Arabic mode
-        /[^a-z0-9_]/g, // Latin mode
-      '')
+      .replace(/[^a-z0-9_]/g, '')
       .replace(/_+/g, '_')
       .replace(/^_|_$/g, '');
   }
 
   return (
-    <div className="flex items-center justify-end space-x-reverse " dir="rtl">
+    <div className="flex items-center justify-end space-x-reverse">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="bg-primary hover:bg-primary/90">
             <Plus className="mr-2 h-4 w-4" />
-            إضافة معامل جديد
+            Ajouter un nouveau paramètre
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl">إضافة معامل جديد</DialogTitle>
+            <DialogTitle className="text-xl">Ajouter un nouveau paramètre</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6 mt-4">
             {/* Main Parameter Details */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">تفاصيل المعامل</CardTitle>
+                <CardTitle className="text-lg">Détails du paramètre</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="label">تسمية المعامل</Label>
+                    <Label htmlFor="label">Étiquette du paramètre</Label>
                     <Input
                       id="label"
                       value={paramData.label}
                       onChange={handleParamChange}
-                      placeholder="مثال: نوع القضية"
+                      placeholder="Exemple: Type de cas"
                       className={labelError ? "border-red-500" : ""}
-                      dir="rtl"
                     />
                     {labelError && <p className="text-red-500 text-sm">{labelError}</p>}
                     {paramData.key && (
                       <div className="text-sm text-muted-foreground mt-1">
-                        المعرف: <Badge variant="outline">{paramData.key}</Badge>
+                        Clé: <Badge variant="outline">{paramData.key}</Badge>
                       </div>
                     )}
                   </div>
@@ -360,7 +354,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                     }}
                   />
                   <Label htmlFor="allowLinkedParams" className="cursor-pointer">
-                    السماح بإضافة معاملات مرتبطة لهذا المعامل
+                    Autoriser l'ajout de paramètres liés à ce paramètre
                   </Label>
                 </div>
               </CardContent>
@@ -369,13 +363,13 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
             {/* Values Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">القيم</CardTitle>
+                <CardTitle className="text-lg">Valeurs</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* List of Added Values */}
                 {paramData.values.length > 0 ? (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium">القيم المضافة:</h4>
+                    <h4 className="text-sm font-medium">Valeurs ajoutées:</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {paramData.values.map((value: any, index: number) => (
                         <div key={index} className="flex items-center justify-between bg-muted p-3 rounded-md">
@@ -388,7 +382,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                             </div>
                             {value.linked_params && value.linked_params.length > 0 && (
                               <div className="text-xs text-muted-foreground flex flex-wrap gap-1">
-                                <span>يعتمد على:</span>
+                                <span>Dépend de:</span>
                                 {value.linked_params.map((lp: any, i: number) => (
                                   <Badge key={i} variant="secondary" className="text-xs">
                                     {getParameterDetails(lp.param_key)?.label || lp.param_key}
@@ -413,29 +407,28 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                 ) : (
                   <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>لم تتم إضافة أي قيم بعد. يجب إضافة قيمة واحدة على الأقل.</AlertDescription>
+                    <AlertDescription>Aucune valeur n'a été ajoutée. Au moins une valeur doit être ajoutée.</AlertDescription>
                   </Alert>
                 )}
 
                 {/* Add New Value Form */}
                 <Card className="border-dashed">
                   <CardHeader className="py-3">
-                    <CardTitle className="text-md">إضافة قيمة جديدة</CardTitle>
+                    <CardTitle className="text-md">Ajouter une nouvelle valeur</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="label">تسمية القيمة</Label>
+                        <Label htmlFor="label">Étiquette de la valeur</Label>
                         <Input
                           id="label"
                           value={newValue.label}
                           onChange={handleValueChange}
-                          placeholder="مثال: قضية مدنية"
-                          dir="rtl"
+                          placeholder="Exemple: Affaire civile"
                         />
                         {newValue.key && (
                           <div className="text-sm text-muted-foreground mt-1">
-                            المعرف: <Badge variant="outline">{newValue.key}</Badge>
+                            Clé: <Badge variant="outline">{newValue.key}</Badge>
                           </div>
                         )}
                       </div>
@@ -455,7 +448,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                         {/* Display current linked parameters */}
                         {newValue.linked_params.length > 0 && (
                           <div className="space-y-2">
-                            <h5 className="text-sm font-medium">المعاملات المرتبطة:</h5>
+                            <h5 className="text-sm font-medium">Paramètres liés:</h5>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                               {newValue.linked_params.map((param: any, index: number) => {
                                 const paramDetails = getParameterDetails(param.param_key)
@@ -493,20 +486,20 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                         {/* Add new linked parameter */}
                         <Card className="border-dashed">
                           <CardContent className="pt-4 space-y-3">
-                            <h5 className="text-sm font-medium">ربط بمعامل</h5>
+                            <h5 className="text-sm font-medium">Lier à un paramètre</h5>
 
                             {isLoading ? (
                               <div className="flex items-center justify-center p-4">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                                <span className="mr-2">جاري تحميل المعاملات...</span>
+                                <span className="mr-2">Chargement des paramètres...</span>
                               </div>
                             ) : (
                               <>
                                 <div>
-                                  <Label htmlFor="param_select">اختر معامل</Label>
+                                  <Label htmlFor="param_select">Choisir un paramètre</Label>
                                   <Select value={newLinkedParam.param_key} onValueChange={selectParameter}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="اختر معامل" />
+                                      <SelectValue placeholder="Choisir un paramètre" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {availableParameters.length > 0 ? (
@@ -517,7 +510,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                                         ))
                                       ) : (
                                         <SelectItem value="no_params" disabled>
-                                          لا توجد معاملات متاحة
+                                          Aucun paramètre disponible
                                         </SelectItem>
                                       )}
                                     </SelectContent>
@@ -526,20 +519,20 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
 
                                 {newLinkedParam.param_key && (
                                   <div className="space-y-2">
-                                    <Label>القيم المسموح بها</Label>
+                                    <Label>Valeurs autorisées</Label>
                                     <div className="grid grid-cols-2 gap-2 border rounded-md p-2">
                                       {getParameterDetails(newLinkedParam.param_key)?.values?.map((value: any) => (
                                         <div key={value} className="flex items-center space-x-2 space-x-reverse">
                                           <Checkbox
                                             id={`val-${value}`}
                                             checked={newLinkedParam.allowed_values.includes(value)}
-                                            onCheckedChange={(checked: boolean  ) => toggleAllowedValue(value, checked)}
+                                            onCheckedChange={(checked: boolean) => toggleAllowedValue(value, checked)}
                                           />
                                           <Label htmlFor={`val-${value}`} className="cursor-pointer">
                                             {value}
                                           </Label>
                                         </div>
-                                      )) || <p>لا توجد قيم متاحة لهذا المعامل</p>}
+                                      )) || <p>Aucune valeur disponible pour ce paramètre</p>}
                                     </div>
                                   </div>
                                 )}
@@ -556,7 +549,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                                 className="gap-1"
                               >
                                 <Plus className="h-4 w-4" />
-                                إضافة ارتباط
+                                Ajouter un lien
                               </Button>
                             </div>
                           </CardContent>
@@ -572,7 +565,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                         className="gap-1"
                       >
                         <Plus className="h-4 w-4" />
-                        إضافة القيمة
+                        Ajouter la valeur
                       </Button>
                     </div>
                   </CardContent>
@@ -583,7 +576,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
             {/* Submit Button */}
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                إلغاء
+                Annuler
               </Button>
               <Button
                 type="submit"
@@ -593,12 +586,12 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    جاري الحفظ...
+                    En cours de sauvegarde...
                   </>
                 ) : (
                   <>
                     <Check className="mr-2 h-4 w-4" />
-                    حفظ المعامل
+                    Sauvegarder le paramètre
                   </>
                 )}
               </Button>
