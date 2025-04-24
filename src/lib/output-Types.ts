@@ -39,5 +39,5 @@ export interface ObjectOutput {
 
 export interface Detail {
     key: string; // Specific keys based on the provided context
-    value: number | boolean | string; // Specific types based on the provided context
+    value: string | number | boolean; // Specific types based on the provided context
 }

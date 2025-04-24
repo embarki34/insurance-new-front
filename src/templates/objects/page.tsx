@@ -108,7 +108,7 @@ export default function Objects() {
   const mapToTableFormat = (objects: ObjectOutput[]): DynamicObject[] => {
     return objects.map(obj => ({
       id: obj.id || String(Math.random()),
-      name: obj.details.find(d => d.key === 'name')?.value || obj.objectType,
+      name: String(obj.details.find(d => d.key === 'name')?.value || obj.objectType),
       type: obj.objectType,
       properties: obj.details.reduce((acc, detail) => {
         acc[detail.key] = detail.value.toString();
