@@ -85,7 +85,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
         // Handle the parameter values properly. If they are strings, 
         // this is an older format, so we create dummy objects
         const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
-          ? (param.values as string[]).map(val => ({ key: val, label: val, linked_params: [] }))
+          ? (param.values as unknown as ParamValue[])
           : (param.values as unknown as ParamValue[])
           
         return {

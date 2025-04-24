@@ -17,7 +17,7 @@ root.render(
       <I18nextProvider i18n={i18n}>
         <SidebarProvider>
           {/* <div className="flex flex-row-reverse w-full"> */}
-            <AppSidebar side="left" />
+            <AppSidebar side="left" variant="inset"/>
             <SidebarInset className="flex-1 min-w-0">
               <SidebarTrigger />
               <App />

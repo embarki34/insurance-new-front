@@ -7,12 +7,18 @@ export type contract = {
 }   
 
 
-
 export type parameter = {
     id: string;
     key: string;
     label: string;
-    values: string[];
+    values: {
+        key: string;
+        label: string;
+        linked_params: {
+            param_key: string;
+            allowed_values: string[];
+        }[];
+    }[]; // Removed hasDependencies property
 }
 
 

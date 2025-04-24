@@ -1,4 +1,4 @@
-import AddContract from "./add"
+// import AddContract from "./add"
 import TableComponent from "./tabel"
 import { useState, useEffect, Suspense } from "react"
 import { deleteContract, getContracts } from "@/data/contracts.service"
@@ -15,7 +15,8 @@ import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
 import { pagination as paginationType } from "@/lib/output-Types"
 import AddCase from "./newAdd"
-import CreateObjects from "../objects/creatObjects"
+import AddContract from "./newAdd"
+// import CreateObjects from "../objects/creatObjects"
 
 
 
@@ -84,14 +85,14 @@ export default function Contracts() {
             </div>
             {/* <AddContract onAdd={handleAdding} /> */}
 
-            <CreateObjects
+            {/* <CreateObjects
               onObjectsCreated={(objects) => {
                 // Do something with the created objects
                 console.log("Created objects:", objects);
                 handleAdding()
               }}
-            />
-            <AddCase onAdd={handleAdding} />
+            /> */}
+            <AddContract onAdd={handleAdding} />
           </div>
         </div>
 

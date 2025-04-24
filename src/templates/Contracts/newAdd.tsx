@@ -22,14 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 
-// Mock data for insurance types
-const insuranceTypes = [
-  { id: "1", name: "Auto Insurance" },
-  { id: "2", name: "Life Insurance" },
-  { id: "3", name: "Health Insurance" },
-  { id: "4", name: "Property Insurance" },
-  { id: "5", name: "Travel Insurance" }
-];
+
 
 // Status options
 const statusOptions = [
@@ -38,7 +31,7 @@ const statusOptions = [
   { value: "pending", label: "Pending", className: "text-yellow-500 font-bold hover:text-yellow-500" }
 ];
 
-interface AddCaseProps {
+interface AddContractProps {
   onAdd: () => void
 }
 
@@ -97,17 +90,22 @@ interface SimpleKeyValue {
 }
 
 // Update the ContractWithParameters interface
-interface ContractWithParameters extends contractInput {
-  parameterValues: SimpleKeyValue[];
+interface ContractWithObjectDetails extends contractInput {
+  insuredList: {
+    objectType: string;
+    details: { key: string; value: any }[];
+    updatedBy: string;
+  }[];
 }
 
-const AddCase = ({ onAdd }: AddCaseProps) => {
+const AddContract = ({ onAdd }: AddContractProps) => {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [contractData, setContractData] = useState<contractInput>({
     type_id: "",
     policyNumber: "",
     insuredAmount: "",
+    primeAmount: "",
     insuranceCompanyName: "",
     holderName: "",
     startDate: new Date().toISOString(),
@@ -132,6 +130,7 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
   const [parameterValues, setParameterValues] = useState<ParameterValue[]>([])
   const [isLoadingParameters, setIsLoadingParameters] = useState(false)
   const [parameterFormValues, setParameterFormValues] = useState<ParameterFormValues>({})
+  const [insuranceTypes, setInsuranceTypes] = useState<parameter[]>([])
 
   // Fetch parameters on component mount
   useEffect(() => {
@@ -143,13 +142,15 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
   const fetchParameters = async () => {
     setIsLoadingParameters(true)
     try {
-      const response = await getParameters()
+      const response = await getParameters().then((response) => {
+        const filteredResponse = response.filter((param) => param.key !== "type_dassurance")
+        return filteredResponse
+      })
       // Convert the response to match our ParameterWithValues interface
       const formattedParameters = response.map(param => {
-        // Handle the parameter values properly. If they are strings, 
-        // this is an older format, so we create dummy objects
+
         const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
-          ? (param.values as string[]).map(val => ({ key: val, label: val, linked_params: [] }))
+          ? (param.values as unknown as ParamValue[])
           : (param.values as unknown as ParamValue[])
           
         return {
@@ -166,6 +167,28 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
       setIsLoadingParameters(false)
     }
   }
+
+
+
+
+  useEffect(() => {
+    const fetchInsuranceTypes = async () => {
+      try {
+        const parameters = await getParameters();
+        const insuranceTypes = parameters.filter((type) => type.key === "type_dassurance");
+        console.log(insuranceTypes)
+        setInsuranceTypes(insuranceTypes);
+      } catch (error) {
+        console.error("Error fetching insurance types:", error);
+      }
+    };
+    fetchInsuranceTypes();
+  }, []);
+
+
+
+
+
 
   // When parameter selection changes
   const handleParameterChange = (value: string) => {
@@ -188,7 +211,7 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
     const selectedParam = parameters.find(param => param.key === selectedParameter)
     if (!selectedParam) return
     
-    // Process the form values and group them by parameter
+    // Process the form values and group them into key-value pairs
     const filledValues = Object.entries(parameterFormValues)
       .filter(([_, value]) => value.trim() !== '')
       .map(([valueKey, customValue]) => {
@@ -196,12 +219,12 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
         if (!paramValue) return null
         
         return {
-          valueKey: paramValue.key,
-          valueLabel: paramValue.label,
-          customValue
+          key: paramValue.key,
+          label: paramValue.label,
+          value: customValue
         }
       })
-      .filter(Boolean) as { valueKey: string; valueLabel: string; customValue: string }[]
+      .filter(Boolean) as { key: string; label: string; value: string }[]
     
     if (filledValues.length === 0) {
       toast.error("Veuillez remplir au moins un champ")
@@ -212,7 +235,11 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
     const newParameterValueObject: ParameterValue = {
       paramKey: selectedParam.key,
       paramLabel: selectedParam.label,
-      values: filledValues,
+      values: filledValues.map(val => ({
+        valueKey: val.key,
+        valueLabel: val.label,
+        customValue: val.value
+      })),
       id: Date.now().toString() // Add a unique ID
     }
     
@@ -265,30 +292,20 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      // Transform parameter values into groups of key-value pairs
-      const simplifiedParams: SimpleKeyValue[] = [];
-      
-      // Iterate through each parameter group
-      parameterValues.forEach(paramGroup => {
-        // Create an object for this parameter group
-        const groupObject: SimpleKeyValue = {};
-        
-        // Add all values from this group to the same object
-        paramGroup.values.forEach(value => {
-          groupObject[value.valueKey] = value.customValue;
-        });
-        
-        // Only add non-empty objects
-        if (Object.keys(groupObject).length > 0) {
-          // Add to the array
-          simplifiedParams.push(groupObject);
-        }
-      });
+      // Format parameter values into the required structure
+      const formattedParams = parameterValues.map(paramGroup => ({
+        objectType: paramGroup.paramKey,
+        details: paramGroup.values.map(value => ({
+          key: value.valueKey,
+          value: value.customValue
+        })),
+        updatedBy: "jane.doe@example.com" // Or any default value you prefer
+      }));
       
       // Include transformed parameter values in contract data
-      const contractWithDetails: ContractWithParameters = {
+      const contractWithDetails: ContractWithObjectDetails = {
         ...contractData,
-        parameterValues: simplifiedParams
+        insuredList: formattedParams // This will be an array of objects in the required format
       };
       
       console.log("Sending contract data:", JSON.stringify(contractWithDetails, null, 2));
@@ -445,7 +462,7 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="grid grid-cols-1 gap-6">
-                      <div className="space-y-4">
+                      <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="type_id" className="text-sm font-semibold flex items-center gap-1">
                             <span className="text-red-500">*</span>
@@ -460,16 +477,15 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
                             </SelectTrigger>
                             <SelectContent>
                               {insuranceTypes.map((type) => (
-                                <SelectItem key={type.id} value={type.id}>
-                                  {type.name}
-                                </SelectItem>
+                                type.values.map((value) => (
+                                  <SelectItem key={value.key} value={value.key}>
+                                    {value.label}
+                                  </SelectItem>
+                                ))
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="policyNumber" className="text-sm font-semibold flex items-center gap-1">
                             <span className="text-red-500">*</span>
@@ -484,6 +500,10 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
                             className="transition-all focus-visible:ring-primary"
                           />
                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
 
                         <div className="space-y-2">
                           <Label htmlFor="insuredAmount" className="text-sm font-semibold flex items-center gap-1">
@@ -497,6 +517,21 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
                             required
                             type="number"
                             placeholder="Entrez le montant assuré"
+                            className="transition-all focus-visible:ring-primary"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="primeAmount" className="text-sm font-semibold flex items-center gap-1">
+                            <span className="text-red-500">*</span>
+                            Montant de la prime
+                          </Label>
+                          <Input
+                            id="primeAmount"
+                            value={contractData.primeAmount}
+                            onChange={handleChange}
+                            required
+                            type="number"
+                            placeholder="Entrez le montant de la prime"
                             className="transition-all focus-visible:ring-primary"
                           />
                         </div>
@@ -679,7 +714,7 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
                         <h3 className="text-lg font-semibold">Ajouter des détails</h3>
                           <div className="mb-4">
                             <Label htmlFor="parameter" className="text-xs font-semibold mb-1 block">
-                              Type de paramètre
+                              Type de objet
                             </Label>
                             <Select 
                               value={selectedParameter} 
@@ -782,4 +817,4 @@ const AddCase = ({ onAdd }: AddCaseProps) => {
   )
 }
 
-export default AddCase
+export default AddContract

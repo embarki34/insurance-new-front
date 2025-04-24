@@ -3,6 +3,7 @@ export type contractInput = {
     type_id: string;
     policyNumber: string;
     insuredAmount: string;
+    primeAmount: string;
     insuranceCompanyName: string;
     holderName: string;
     startDate: string;
