@@ -81,18 +81,18 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
     try {
       const response = await getParameters()
       // Convert the response to match our ParameterWithValues interface
-      const formattedParameters = response.map(param => {
-        // Handle the parameter values properly. If they are strings, 
-        // this is an older format, so we create dummy objects
-        const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
-          ? (param.values as unknown as ParamValue[])
-          : (param.values as unknown as ParamValue[])
-          
-        return {
-          ...param,
-          values: formattedValues
-        }
-      })
+      const formattedParameters = response
+        .filter(param => param.key !== "type_dassurance") // Remove type_dassurance and its values
+        .map(param => {
+          const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
+            ? (param.values as unknown as ParamValue[])
+            : (param.values as unknown as ParamValue[])
+            
+          return {
+            ...param,
+            values: formattedValues
+          }
+        });
       
       setParameters(formattedParameters as ParameterWithValues[])
     } catch (error) {

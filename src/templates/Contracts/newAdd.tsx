@@ -1,4 +1,4 @@
-"use client"
+
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Plus, Loader2, Check, CalendarIcon, Trash, PlusCircle, Copy, ThumbsUp } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
-import { contractInput } from "@/lib/input-Types"
+import { contractInput, objectInput } from "@/lib/input-Types"
 import { createContract } from "@/data/contracts.service"
 import { getParameters } from "@/data/parameters.service"
-import { parameter } from "@/lib/output-Types"
+import { ObjectOutput, parameter } from "@/lib/output-Types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/format"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -21,6 +21,8 @@ import { fr } from "date-fns/locale"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { getObjects } from "@/data/object.service"
+import CreateObjects from "../objects/creatObjects"
 
 
 
@@ -91,11 +93,7 @@ interface SimpleKeyValue {
 
 // Update the ContractWithParameters interface
 interface ContractWithObjectDetails extends contractInput {
-  insuredList: {
-    objectType: string;
-    details: { key: string; value: any }[];
-    updatedBy: string;
-  }[];
+  insuredList: string[]; // Changed to string[] to store object IDs
 }
 
 const AddContract = ({ onAdd }: AddContractProps) => {
@@ -123,6 +121,11 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [newAttributeType, setNewAttributeType] = useState<'text' | 'number' | 'boolean'>('text');
   const [objectInstances, setObjectInstances] = useState<ObjectInstance[]>([]);
   const [currentInstance, setCurrentInstance] = useState<{ [key: string]: any }>({});
+  const [objects, setObjects] = useState<ObjectOutput[]>([]);
+  const [selectedObjectType, setSelectedObjectType] = useState<string>("");
+  const [filteredObjects, setFilteredObjects] = useState<ObjectOutput[]>([]);
+  const [selectedObjectIds, setSelectedObjectIds] = useState<string[]>([]);
+  const [showCreateObjectDialog, setShowCreateObjectDialog] = useState(false);
 
   // New states for parameters
   const [parameters, setParameters] = useState<ParameterWithValues[]>([])
@@ -131,6 +134,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [isLoadingParameters, setIsLoadingParameters] = useState(false)
   const [parameterFormValues, setParameterFormValues] = useState<ParameterFormValues>({})
   const [insuranceTypes, setInsuranceTypes] = useState<parameter[]>([])
+  const [refetch, setRefetch] = useState(false);
 
   // Fetch parameters on component mount
   useEffect(() => {
@@ -152,13 +156,13 @@ const AddContract = ({ onAdd }: AddContractProps) => {
         const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
           ? (param.values as unknown as ParamValue[])
           : (param.values as unknown as ParamValue[])
-          
+
         return {
           ...param,
           values: formattedValues
         }
       })
-      
+
       setParameters(formattedParameters as ParameterWithValues[])
     } catch (error) {
       console.error("Error fetching parameters:", error)
@@ -182,13 +186,49 @@ const AddContract = ({ onAdd }: AddContractProps) => {
         console.error("Error fetching insurance types:", error);
       }
     };
+
+    const fetchObjects = async () => {
+      try {
+        const objectsData = await getObjects();
+        setObjects(objectsData.objects);
+      } catch (error) {
+        console.error("Error fetching objects:", error);
+      }
+    };
+
     fetchInsuranceTypes();
-  }, []);
+    fetchObjects();
+  }, [refetch]);
 
+  // Filter objects when object type is selected
+  useEffect(() => {
+    if (selectedObjectType) {
+      const filtered = objects.filter(obj => obj.objectType === selectedObjectType);
+      setFilteredObjects(filtered);
+    } else {
+      setFilteredObjects([]);
+    }
+  }, [selectedObjectType, objects]);
 
+  // Handle object type selection
+  const handleObjectTypeChange = (value: string) => {
+    setSelectedObjectType(value);
+  };
 
+  // Handle object selection (checkbox)
+  const handleObjectSelection = (objectId: string, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedObjectIds(prev => [...prev, objectId]);
+    } else {
+      setSelectedObjectIds(prev => prev.filter(id => id !== objectId));
+    }
+  };
 
-
+  // Handle object creation completion
+  const handleObjectCreated = () => {
+    setRefetch(!refetch); // Trigger a refetch of objects
+    setShowCreateObjectDialog(false);
+  };
 
   // When parameter selection changes
   const handleParameterChange = (value: string) => {
@@ -210,14 +250,14 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     // Get the selected parameter
     const selectedParam = parameters.find(param => param.key === selectedParameter)
     if (!selectedParam) return
-    
+
     // Process the form values and group them into key-value pairs
     const filledValues = Object.entries(parameterFormValues)
       .filter(([_, value]) => value.trim() !== '')
       .map(([valueKey, customValue]) => {
         const paramValue = selectedParam.values.find(val => val.key === valueKey)
         if (!paramValue) return null
-        
+
         return {
           key: paramValue.key,
           label: paramValue.label,
@@ -225,12 +265,12 @@ const AddContract = ({ onAdd }: AddContractProps) => {
         }
       })
       .filter(Boolean) as { key: string; label: string; value: string }[]
-    
+
     if (filledValues.length === 0) {
       toast.error("Veuillez remplir au moins un champ")
       return
     }
-    
+
     // Create a single parameter value object with all the values
     const newParameterValueObject: ParameterValue = {
       paramKey: selectedParam.key,
@@ -242,13 +282,13 @@ const AddContract = ({ onAdd }: AddContractProps) => {
       })),
       id: Date.now().toString() // Add a unique ID
     }
-    
+
     // Add the new parameter value object to the list
     setParameterValues(prev => [...prev, newParameterValueObject])
-    
+
     // Reset just the form values but keep the selected parameter
     setParameterFormValues({})
-    
+
     toast.success(`Nouveau groupe de valeurs ajouté avec succès`)
   }
 
@@ -292,25 +332,15 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      // Format parameter values into the required structure
-      const formattedParams = parameterValues.map(paramGroup => ({
-        objectType: paramGroup.paramKey,
-        details: paramGroup.values.map(value => ({
-          key: value.valueKey,
-          value: value.customValue
-        })),
-        updatedBy: "jane.doe@example.com" // Or any default value you prefer
-      }));
-      
-      // Include transformed parameter values in contract data
+      // Use the selectedObjectIds directly
       const contractWithDetails: ContractWithObjectDetails = {
         ...contractData,
-        insuredList: formattedParams // This will be an array of objects in the required format
+        insuredList: selectedObjectIds // Just use the array of IDs
       };
-      
+
       console.log("Sending contract data:", JSON.stringify(contractWithDetails, null, 2));
-      
-      // Use the contractWithDetails object with the transformed parameter values
+
+      // Use the contractWithDetails object with the object IDs
       await createContract(contractWithDetails as any);
       toast.success("Le contrat a été créé avec succès");
       onAdd();
@@ -324,7 +354,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
   const addDetailObject = () => {
     if (newLabel.trim() === "" || newValue.trim() === "") return;
-    
+
     setDetailObjects([
       ...detailObjects,
       {
@@ -334,7 +364,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
         count: newCount
       }
     ]);
-    
+
     // Keep the count, clear the other fields
     setNewLabel("");
     setNewValue("");
@@ -355,33 +385,33 @@ const AddContract = ({ onAdd }: AddContractProps) => {
       "bg-indigo-100 border-indigo-300",
       "bg-pink-100 border-pink-300"
     ];
-    
+
     return colors[(count - 1) % colors.length];
   };
 
   const addAttributeToSchema = () => {
     if (!newAttributeName.trim()) return;
-    
+
     const newAttribute: SchemaAttribute = {
       id: Date.now().toString(),
       name: newAttributeName,
       type: newAttributeType
     };
-    
+
     setSchemaAttributes([...schemaAttributes, newAttribute]);
     setNewAttributeName("");
   };
-  
+
   const removeAttributeFromSchema = (id: string) => {
     setSchemaAttributes(schemaAttributes.filter(attr => attr.id !== id));
   };
-  
+
   const approveSchema = () => {
     if (schemaAttributes.length === 0) return;
     setSchemaApproved(true);
     setCurrentInstance({});
   };
-  
+
   const resetSchema = () => {
     if (window.confirm("Are you sure? This will delete all objects and reset the schema.")) {
       setSchemaApproved(false);
@@ -390,47 +420,47 @@ const AddContract = ({ onAdd }: AddContractProps) => {
       setCurrentInstance({});
     }
   };
-  
+
   const updateCurrentInstance = (attributeId: string, value: any) => {
     const attribute = schemaAttributes.find(attr => attr.id === attributeId);
     if (!attribute) return;
-    
+
     let processedValue = value;
     if (attribute.type === 'number') {
       processedValue = value === '' ? '' : Number(value);
     } else if (attribute.type === 'boolean') {
       processedValue = Boolean(value);
     }
-    
+
     setCurrentInstance({
       ...currentInstance,
       [attribute.name]: processedValue
     });
   };
-  
+
   const addObjectInstance = () => {
     const newInstance: ObjectInstance = {
       id: Date.now().toString(),
       attributes: { ...currentInstance }
     };
-    
+
     setObjectInstances([...objectInstances, newInstance]);
     setCurrentInstance({});
   };
-  
+
   const removeObjectInstance = (id: string) => {
     setObjectInstances(objectInstances.filter(obj => obj.id !== id));
   };
-  
+
   const duplicateObjectInstance = (id: string) => {
     const instanceToDuplicate = objectInstances.find(obj => obj.id === id);
     if (!instanceToDuplicate) return;
-    
+
     const newInstance: ObjectInstance = {
       id: Date.now().toString(),
       attributes: { ...instanceToDuplicate.attributes }
     };
-    
+
     setObjectInstances([...objectInstances, newInstance]);
   };
 
@@ -457,7 +487,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                 <TabsTrigger value="general" className="flex-1">Général</TabsTrigger>
                 <TabsTrigger value="details" className="flex-1">Détails</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="general">
                 <Card>
                   <CardContent className="pt-6">
@@ -468,8 +498,8 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                             <span className="text-red-500">*</span>
                             Type de police
                           </Label>
-                          <Select 
-                            value={contractData.type_id} 
+                          <Select
+                            value={contractData.type_id}
                             onValueChange={(value) => handleSelectChange("type_id", value)}
                           >
                             <SelectTrigger className="w-full">
@@ -503,7 +533,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        
+
 
                         <div className="space-y-2">
                           <Label htmlFor="insuredAmount" className="text-sm font-semibold flex items-center gap-1">
@@ -643,9 +673,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                           </SelectTrigger>
                           <SelectContent>
                             {statusOptions.map((option) => (
-                              <SelectItem 
-                                key={option.value} 
-                                value={option.value} 
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
                                 className={option.className}
                               >
                                 {option.label}
@@ -658,120 +688,148 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="details">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Left side - List of added parameter values */}
+                      {/* Left side - List of selected objects */}
                       <div className="md:col-span-1 space-y-4">
-                        <h3 className="text-lg font-semibold">Détails ajoutés</h3>
-                        
-                        {parameterValues.length > 0 ? (
+                        <h3 className="text-lg font-semibold">Objets sélectionnés</h3>
+
+                        {selectedObjectIds.length > 0 ? (
                           <div className="h-[480px] overflow-y-auto pr-2 space-y-2">
-                            {parameterValues.map((paramGroup) => (
-                              <div 
-                                key={paramGroup.id} 
-                                className="p-3 border rounded-md bg-background"
-                              >
-                                <div className="flex justify-between items-center mb-2">
-                                  <Badge className="text-xs">
-                                    {paramGroup.paramLabel}
-                                  </Badge>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => removeParameterValue(paramGroup.id)}
-                                    className="h-7 w-7 p-0"
-                                  >
-                                    <Trash className="h-3.5 w-3.5" />
-                                  </Button>
+                            {selectedObjectIds.map((objectId) => {
+                              const object = objects.find(obj => obj.id === objectId);
+                              return (
+                                <div
+                                  key={objectId}
+                                  className="p-3 border rounded-md bg-background"
+                                >
+                                  <div className="flex justify-between items-center mb-2">
+                                    <Badge className="text-xs">
+                                      {object?.objectType || "Objet"}
+                                    </Badge>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleObjectSelection(objectId, false)}
+                                      className="h-7 w-7 p-0"
+                                    >
+                                      <Trash className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {object?.details.map((detail, index) => (
+                                      <div key={index} className="flex items-start text-sm border-b pb-1 last:border-0">
+                                        <span className="font-medium min-w-24">{detail.key}:</span>
+                                        <span className="ml-2">{detail.value}</span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                                
-                                <div className="space-y-2">
-                                  {paramGroup.values.map((value, valueIndex) => (
-                                    <div key={valueIndex} className="flex items-start text-sm border-b pb-1 last:border-0">
-                                      <span className="font-medium min-w-24">{value.valueLabel}:</span>
-                                      <span className="ml-2">{value.customValue}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="h-[480px] border rounded-md flex items-center justify-center bg-muted/10">
                             <div className="text-center p-4 text-muted-foreground">
-                              <p>Aucun détail ajouté</p>
-                              <p className="text-sm">Sélectionnez un paramètre à droite pour ajouter des détails</p>
+                              <p>Aucun objet sélectionné</p>
+                              <p className="text-sm">Sélectionnez un type d'objet à droite puis choisissez des objets</p>
                             </div>
                           </div>
                         )}
                       </div>
-                      
-                      {/* Right side - Parameter selection and form */}
+
+                      {/* Right side - Object type selection and object list */}
                       <div className="md:col-span-2 space-y-4">
-                        <h3 className="text-lg font-semibold">Ajouter des détails</h3>
-                          <div className="mb-4">
-                            <Label htmlFor="parameter" className="text-xs font-semibold mb-1 block">
-                              Type de objet
-                            </Label>
-                            <Select 
-                              value={selectedParameter} 
-                              onValueChange={handleParameterChange}
-                              disabled={isLoadingParameters}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder={isLoadingParameters ? "Chargement des paramètres..." : "Sélectionnez un paramètre"} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {parameters.map((param) => (
-                                  <SelectItem key={param.id} value={param.key}>
-                                    {param.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        
-                        {/* Parameter selection dropdown */}
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold">Sélectionner des objets</h3>
+                         
+                            <CreateObjects
+                              onObjectsCreated={handleObjectCreated}
+                            />
+                         
+                        </div>
+
+                        <div className="mb-4">
+                          <Label htmlFor="objectType" className="text-xs font-semibold mb-1 block">
+                            Type d'objet
+                          </Label>
+                          <Select
+                            value={selectedObjectType}
+                            onValueChange={handleObjectTypeChange}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Sélectionnez un type d'objet" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {parameters.map((param) => (
+                                <SelectItem key={param.id} value={param.key}>
+                                  {param.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Object list */}
                         <div className="p-4 bg-muted/20 rounded-md">
-                          <h4 className="text-sm font-medium mb-3">Sélectionner un type d'objet</h4>
-                          
-                          
-                          {selectedParameter && selectedParameterObject && (
-                            <div className="space-y-4">
-                              <h4 className="text-sm font-medium">Remplir les détails pour {selectedParameterObject.label}</h4>
-                              
-                              <div className="space-y-3 max-h-[320px] overflow-y-auto pr-2">
-                                {selectedParameterObject.values.map((paramValue) => (
-                                  <div key={paramValue.key} className="space-y-1">
-                                    <Label 
-                                      htmlFor={`param-${paramValue.key}`} 
-                                      className="text-xs font-semibold block"
-                                    >
-                                      {paramValue.label}
-                                    </Label>
-                                    <Input
-                                      id={`param-${paramValue.key}`}
-                                      value={parameterFormValues[paramValue.key] || ''}
-                                      onChange={(e) => handleParameterFormChange(paramValue.key, e.target.value)}
-                                      placeholder={`Entrez la valeur pour ${paramValue.label}`}
+                          <h4 className="text-sm font-medium mb-3">Objets disponibles</h4>
+
+                          {selectedObjectType ? (
+                            filteredObjects.length > 0 ? (
+                              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2" >
+                                {filteredObjects.map((object) => (
+                                  <div key={object.id} className="flex items-start border-b border-muted pb-2 last:border-0">
+                                    <Checkbox
+                                      id={`object-${object.id}`}
+                                      checked={selectedObjectIds.includes(object.id)}
+                                      onCheckedChange={(checked) =>
+                                        handleObjectSelection(object.id, checked as boolean)
+                                      }
+                                      className="mt-1 mr-3"
                                     />
+                                    <div className="flex-1">
+                                      <Label
+                                        htmlFor={`object-${object.id}`}
+                                        className="font-medium cursor-pointer"
+                                      >
+                                        {object.details.find(d => d.key === "name")?.value ||
+                                          object.details.find(d => d.key === "titre")?.value ||
+                                          `Objet ${object.id.substring(0, 8)}`}
+                                      </Label>
+                                      <div className="text-sm text-muted-foreground mt-1">
+                                        {object.details.slice(0, 3).map((detail, index) => (
+                                          <div key={index} className="flex items-start">
+                                            <span className="font-medium min-w-24">{detail.key}:</span>
+                                            <span className="ml-2">{detail.value}</span>
+                                          </div>
+                                        ))}
+                                        {object.details.length > 3 && (
+                                          <div className="text-xs text-muted-foreground mt-1">
+                                            + {object.details.length - 3} autres attributs
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
-                              
-                              <Button
-                                type="button"
-                                onClick={addParameterValues}
-                                className="w-full mt-2"
-                                variant="outline"
-                                disabled={Object.values(parameterFormValues).every(val => !val || val.trim() === '')}
-                              >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Ajouter les valeurs
-                              </Button>
+                            ) : (
+                              <div className="p-6 border rounded-md text-center bg-muted/5">
+                                <p className="text-muted-foreground">Aucun objet de ce type n'est disponible</p>
+                               
+                                  <CreateObjects
+                                    onObjectsCreated={handleObjectCreated}
+                                  />
+                               
+                              </div>
+                            )
+                          ) : (
+                            <div className="p-6 border rounded-md text-center bg-muted/5">
+                              <p className="text-muted-foreground">Veuillez sélectionner un type d'objet</p>
                             </div>
                           )}
                         </div>
@@ -813,6 +871,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog for creating objects */}
+
     </div>
   )
 }

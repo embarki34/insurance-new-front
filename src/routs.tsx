@@ -44,7 +44,7 @@ const AppRoutes: React.FC = () => {
 
 
       {/* pages */}
-      <Route path="/" element={<Navigate to="/cases" replace />} />
+      <Route path="/" element={<Navigate to="/contracts" replace />} />
       <Route path="/contracts" element={<Contracts />} />
       <Route path="/objects" element={<Objects />} />
       {/* <Route path="/cases/:id" element={<CasePage />} /> */}

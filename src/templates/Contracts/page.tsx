@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
 import { pagination as paginationType } from "@/lib/output-Types"
-import AddCase from "./newAdd"
 import AddContract from "./newAdd"
 // import CreateObjects from "../objects/creatObjects"
 

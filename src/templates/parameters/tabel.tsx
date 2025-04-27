@@ -30,7 +30,7 @@ import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Parameter } from "@/lib/types"
+import { parameter } from "@/lib/output-Types"
 
 function TableComponent({
   parameters = [],
@@ -38,12 +38,12 @@ function TableComponent({
   onEdit = (_id:string) => {},
   onDelete = (_id:string) => {},
 }) {
-  const [sortBy, setSortBy] = useState<keyof Parameter>("key")
+  const [sortBy, setSortBy] = useState<keyof parameter>("key")
   const [sortOrder, setSortOrder] = useState("asc")
-  const [selectedType, setSelectedType] = useState<Parameter | null>(null)
+  const [selectedType, setSelectedType] = useState<parameter | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
 
-  const handleSort = (column: keyof Parameter) => {
+  const handleSort = (column: keyof parameter) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
     } else {
@@ -62,7 +62,7 @@ function TableComponent({
     }
   })
 
-  const openDetails = (type: Parameter) => {
+  const openDetails = (type: parameter) => {
     setSelectedType(type)
     setDetailsOpen(true)
   }
@@ -117,7 +117,7 @@ function TableComponent({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((type: Parameter, index: number) => (
+            {sortedData.map((type: parameter, index: number) => (
               <TableRow
                 key={type.id}
                 className="hover:bg-muted/50 transition-colors"
