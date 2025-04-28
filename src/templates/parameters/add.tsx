@@ -13,15 +13,56 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { parameter } from "@/lib/output-Types"
+
+// Add these type definitions at the top after imports
+interface ParameterValue {
+  key: string;
+  label: string;
+  linked_params: {
+    param_key: string;
+    allowed_values: string[];
+  }[];
+  hasDependencies: boolean;
+}
+
+interface ParameterData {
+  key: string;
+  label: string;
+  values: ParameterValue[];
+  updatedBy: string;
+  allowLinkedParams: boolean;
+}
+
+interface NewValue {
+  key: string;
+  label: string;
+  hasDependencies: boolean;
+  linked_params: {
+    param_key: string;
+    allowed_values: string[];
+  }[];
+}
+
+interface LinkedParam {
+  param_key: string;
+  allowed_values: string[];
+}
+
+interface AvailableParameter {
+  key: string;
+  label: string;
+  values: string[];
+}
 
 const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [availableParameters, setAvailableParameters] = useState([])
+  const [availableParameters, setAvailableParameters] = useState<AvailableParameter[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Main parameter data
-  const [paramData, setParamData] = useState({
+  const [paramData, setParamData] = useState<ParameterData>({
     key: "",
     label: "",
     values: [],
@@ -30,7 +71,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   })
 
   // Temporary state for a new value being added
-  const [newValue, setNewValue] = useState({
+  const [newValue, setNewValue] = useState<NewValue>({
     key: "",
     label: "",
     hasDependencies: false,
@@ -38,7 +79,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   })
 
   // State for a new linked parameter being added to a value
-  const [newLinkedParam, setNewLinkedParam] = useState({
+  const [newLinkedParam, setNewLinkedParam] = useState<LinkedParam>({
     param_key: "",
     allowed_values: [],
   })
@@ -63,9 +104,9 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
       const transformedParams = response.map((param) => ({
         key: param.key,
         label: param.label,
-        values: param.values.map(value => value.label) // Use value.label as the value
+        values: param.values.map(value => value.label)
       }))
-      setAvailableParameters(transformedParams as any)
+      setAvailableParameters(transformedParams)
     } catch (error) {
       console.error("Error fetching parameters:", error)
       toast.error("Échec de la récupération des paramètres disponibles")
@@ -140,7 +181,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   const toggleAllowedValue = (value: string, isChecked: boolean) => {
-    setNewLinkedParam((prev: any) => {
+    setNewLinkedParam((prev) => {
       if (isChecked) {
         return {
           ...prev,
@@ -149,7 +190,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
       } else {
         return {
           ...prev,
-          allowed_values: prev.allowed_values.filter((v: any) => v !== value),
+          allowed_values: prev.allowed_values.filter((v) => v !== value),
         }
       }
     })
@@ -161,7 +202,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
       return
     }
 
-    setNewValue((prev: any) => ({
+    setNewValue((prev) => ({
       ...prev,
       linked_params: [...prev.linked_params, { ...newLinkedParam }],
     }))
@@ -174,9 +215,9 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   const removeLinkedParam = (index: number) => {
-    setNewValue((prev: any) => ({
+    setNewValue((prev) => ({
       ...prev,
-      linked_params: prev.linked_params.filter((_: any, i: number) => i !== index),
+      linked_params: prev.linked_params.filter((_, i) => i !== index),
     }))
   }
 
@@ -192,17 +233,16 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     }
 
     // Prepare value object
-    const valueToAdd = {
+    const valueToAdd: ParameterValue = {
       key: newValue.key,
       label: newValue.label,
+      linked_params: newValue.hasDependencies && newValue.linked_params.length > 0 
+        ? [...newValue.linked_params]
+        : [],
+      hasDependencies: newValue.hasDependencies
     }
 
-    // Add linked_params only if there are dependencies
-    if (newValue.hasDependencies && newValue.linked_params.length > 0) {
-      valueToAdd.linked_params = [...newValue.linked_params]
-    }
-
-    setParamData((prev: any) => ({
+    setParamData((prev) => ({
       ...prev,
       values: [...prev.values, valueToAdd],
     }))
@@ -218,9 +258,9 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   const removeValue = (index: number) => {
-    setParamData((prev: any) => ({
+    setParamData((prev) => ({
       ...prev,
-      values: prev.values.filter((_: any, i: number) => i !== index),
+      values: prev.values.filter((_, i) => i !== index),
     }))
   }
 
@@ -243,7 +283,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
 
     try {
       // Submit the full parameter with its values and dependencies
-      const response = await createParameter(paramData as any)
+      const response = await createParameter(paramData)
       onAdd(response)
 
       // Reset form
@@ -270,8 +310,8 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   // Find parameter details by key
-  const getParameterDetails = (paramKey: string) => {
-    return availableParameters.find((param: any) => param.key === paramKey)
+  const getParameterDetails = (paramKey: string): AvailableParameter | undefined => {
+    return availableParameters.find((param) => param.key === paramKey)
   }
 
   const formatKeyExample = (text: string) => {

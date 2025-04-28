@@ -70,7 +70,7 @@ function parameters() {
       deleteNoticeProcessTypeFromTable(id)
     }
   }
-  const handleEdit = (id: string) => {
+  const handleClose = () => {
     setRefresh(!refresh)
   }
 
@@ -221,7 +221,8 @@ function parameters() {
                     parameters={filteredTypes as any}
                     onDelete={confirmDelete}
                     isLoading={isLoading}
-                    onEdit={handleEdit}
+                    
+                    onClose={handleClose}
                   />
                 </div>
               )}

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Pen, Trash, AlertCircle, Eye, ArrowUpDown, ChevronRight, Plus } from 'lucide-react'
+import { Pen, Trash, AlertCircle, Eye, ArrowUpDown, ChevronRight, Plus, Loader2 } from 'lucide-react'
 import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -41,6 +41,8 @@ function TableComponent({
   isLoading = false,
   onEdit = (_id:string) => {},
   onDelete = (_id:string) => {},
+  onClose = () => {}, // Added onClose callback
+
 }) {
   const [sortBy, setSortBy] = useState<keyof parameter>("key")
   const [sortOrder, setSortOrder] = useState("asc")
@@ -273,7 +275,12 @@ function TableComponent({
       </div>
 
       {/* Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+      <Dialog open={detailsOpen} onOpenChange={(open) => {
+        setDetailsOpen(open);
+        if (!open) {
+          onClose(); // Call onClose when dialog is closed
+        }
+      }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
@@ -296,7 +303,7 @@ function TableComponent({
           {selectedType && (
             <ScrollArea className="max-h-[70vh] pr-4">
               <div className="space-y-6" dir="rtl">
-                {/* Basic Information Card - remains unchanged */}
+                {/* Basic Information Card */}
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">معلومات أساسية</CardTitle>
@@ -361,7 +368,7 @@ function TableComponent({
                             className="gap-1"
                           >
                             {isUpdating ? (
-                              <Spinner />
+                              <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <Plus className="h-4 w-4" />
                             )}
@@ -397,7 +404,7 @@ function TableComponent({
                                   disabled={isUpdating}
                                 >
                                   {isUpdating ? (
-                                    <Spinner />
+                                    <Loader2 className="h-3 w-3 animate-spin" />
                                   ) : (
                                     <Trash className="h-3 w-3" />
                                   )}
