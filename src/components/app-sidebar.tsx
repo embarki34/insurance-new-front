@@ -2,6 +2,7 @@ import * as React from "react"
 import {
   Bell,
   Briefcase,
+  Building2,
   FileText,
   LifeBuoy,
   Send,
@@ -37,6 +38,11 @@ const data = {
       title: "Objets",
       url: "/objects",
       icon: Send,
+    },
+    {
+      title: "Zones ",
+      url: "/zone-et-sites",
+      icon: Building2,
     },
   ],
   navSecondary: [

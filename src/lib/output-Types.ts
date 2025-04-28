@@ -31,6 +31,11 @@ export type pagination = {
 }
 
 
+
+
+
+
+
 export type getObjectsOutput = {
     objects: ObjectOutput[]
 }
@@ -46,4 +51,45 @@ export interface ObjectOutput {
 export interface Detail {
     key: string; // Specific keys based on the provided context
     value: string | number | boolean; // Specific types based on the provided context
+}
+
+
+
+
+
+
+
+export interface ZoneOutput {
+    id: string;
+    name: string;
+    address: string;
+    sites: string[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+
+export interface ZoneDetailsOutput {
+    id: string;
+    name: string;
+    address: string;
+    sites: SiteOutput[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+
+
+
+
+
+export interface SiteOutput {
+    id: string;
+    name: string;
+    builtSurface: number;
+    zone: string;
+    unbuiltSurface: number;
+    totalValue: number;
+    createdAt: string;
+    updatedAt: string;
 }

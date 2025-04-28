@@ -1,4 +1,4 @@
-
+"use client"
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -476,7 +476,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
             Ajouter un nouveau contrat (avec paramètres et détails)
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-4xl w-full overflow-y-auto p-6 bg-background shadow-lg rounded-lg">
+        <DialogContent className="sm:max-w-7xl w-full overflow-y-auto p-6 bg-background shadow-lg rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center mb-4">Ajouter un nouveau contrat</DialogTitle>
           </DialogHeader>
@@ -746,11 +746,11 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                       <div className="md:col-span-2 space-y-4">
                         <div className="flex justify-between items-center">
                           <h3 className="text-lg font-semibold">Sélectionner des objets</h3>
-                         
+                      
                             <CreateObjects
                               onObjectsCreated={handleObjectCreated}
                             />
-                         
+                       
                         </div>
 
                         <div className="mb-4">
@@ -820,11 +820,11 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                             ) : (
                               <div className="p-6 border rounded-md text-center bg-muted/5">
                                 <p className="text-muted-foreground">Aucun objet de ce type n'est disponible</p>
-                               
+                                {showCreateObjectDialog && (
                                   <CreateObjects
                                     onObjectsCreated={handleObjectCreated}
                                   />
-                               
+                                )}
                               </div>
                             )
                           ) : (

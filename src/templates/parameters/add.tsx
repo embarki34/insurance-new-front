@@ -140,7 +140,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   const toggleAllowedValue = (value: string, isChecked: boolean) => {
-    setNewLinkedParam((prev) => {
+    setNewLinkedParam((prev: any) => {
       if (isChecked) {
         return {
           ...prev,
@@ -149,7 +149,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
       } else {
         return {
           ...prev,
-          allowed_values: prev.allowed_values.filter((v) => v !== value),
+          allowed_values: prev.allowed_values.filter((v: any) => v !== value),
         }
       }
     })
@@ -161,7 +161,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
       return
     }
 
-    setNewValue((prev) => ({
+    setNewValue((prev: any) => ({
       ...prev,
       linked_params: [...prev.linked_params, { ...newLinkedParam }],
     }))
@@ -174,9 +174,9 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   }
 
   const removeLinkedParam = (index: number) => {
-    setNewValue((prev) => ({
+    setNewValue((prev: any) => ({
       ...prev,
-      linked_params: prev.linked_params.filter((_, i) => i !== index),
+      linked_params: prev.linked_params.filter((_: any, i: number) => i !== index),
     }))
   }
 
@@ -335,7 +335,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                     id="allowLinkedParams"
                     checked={paramData.allowLinkedParams}
                     onCheckedChange={(checked: boolean) => {
-                      setParamData(prev => ({
+                      setParamData((prev: any) => ({
                         ...prev,
                         allowLinkedParams: checked,
                         // Reset all dependencies if disabled
@@ -346,7 +346,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                       }))
                       
                       // Reset new value dependencies
-                      setNewValue(prev => ({
+                      setNewValue((prev: any) => ({
                         ...prev,
                         hasDependencies: false,
                         linked_params: []

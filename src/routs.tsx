@@ -6,6 +6,8 @@ import Parameters from './templates/parameters/page';
 import { NotFoundPage } from './Not-Found';
 import Contracts from './templates/Contracts/page';
 import Objects from './templates/objects/page';
+import ZoneEtSites from './templates/zoneEtSites/page';
+import ZoneDetails from './templates/zoneEtSites/[id]/page';
 const InvalidRoute = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <div className="max-w-lg w-full mx-4 p-8 bg-white rounded-2xl shadow-xl space-y-8">
@@ -47,6 +49,8 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Navigate to="/contracts" replace />} />
       <Route path="/contracts" element={<Contracts />} />
       <Route path="/objects" element={<Objects />} />
+      <Route path="/zone-et-sites" element={<ZoneEtSites />} />
+      <Route path="/zone-et-sites/zone/info/:id" element={<ZoneDetails />} />
       {/* <Route path="/cases/:id" element={<CasePage />} /> */}
 
 

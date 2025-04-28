@@ -25,12 +25,16 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Pen, Trash, AlertCircle, Eye, ArrowUpDown, ChevronRight } from 'lucide-react'
+import { Pen, Trash, AlertCircle, Eye, ArrowUpDown, ChevronRight, Plus } from 'lucide-react'
 import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { parameter } from "@/lib/output-Types"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
+import { updateParameter } from "@/data/parameters.service"
 
 function TableComponent({
   parameters = [],
@@ -42,6 +46,9 @@ function TableComponent({
   const [sortOrder, setSortOrder] = useState("asc")
   const [selectedType, setSelectedType] = useState<parameter | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [newValue, setNewValue] = useState({ key: "", label: "" })
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const handleSort = (column: keyof parameter) => {
     if (sortBy === column) {
@@ -65,6 +72,65 @@ function TableComponent({
   const openDetails = (type: parameter) => {
     setSelectedType(type)
     setDetailsOpen(true)
+    setIsEditMode(false)
+    setNewValue({ key: "", label: "" })
+  }
+
+  const handleValueDelete = async (valueIndex: number) => {
+    if (!selectedType || !isEditMode) return
+
+    try {
+      setIsUpdating(true)
+      const updatedValues = selectedType.values.filter((_, index) => index !== valueIndex)
+      const updatedParameter = {
+        ...selectedType,
+        values: updatedValues
+      }
+
+      await updateParameter(selectedType.id, {
+        key: selectedType.key,
+        label: selectedType.label,
+        values: updatedValues
+      })
+
+      setSelectedType(updatedParameter)
+      onEdit(selectedType.id)
+      toast.success("تم حذف القيمة بنجاح")
+    } catch (error) {
+      console.error("Error deleting value:", error)
+      toast.error("حدث خطأ أثناء حذف القيمة")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleAddValue = async () => {
+    if (!selectedType || !newValue.key || !newValue.label) return
+
+    try {
+      setIsUpdating(true)
+      const updatedValues = [...selectedType.values, { ...newValue, linked_params: [] }]
+      const updatedParameter = {
+        ...selectedType,
+        values: updatedValues
+      }
+
+      await updateParameter(selectedType.id, {
+        key: selectedType.key,
+        label: selectedType.label,
+        values: updatedValues
+      })
+
+      setSelectedType(updatedParameter)
+      onEdit(selectedType.id)
+      setNewValue({ key: "", label: "" })
+      toast.success("تمت إضافة القيمة بنجاح")
+    } catch (error) {
+      console.error("Error adding value:", error)
+      toast.error("حدث خطأ أثناء إضافة القيمة")
+    } finally {
+      setIsUpdating(false)
+    }
   }
 
   if (isLoading) {
@@ -207,12 +273,20 @@ function TableComponent({
       </div>
 
       {/* Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen} >
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-             
               تفاصيل المعامل
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`ml-auto h-8 w-8 ${isEditMode ? 'bg-primary/10 text-primary' : ''}`}
+                onClick={() => setIsEditMode(!isEditMode)}
+                disabled={isUpdating}
+              >
+                <Pen className="h-4 w-4" />
+              </Button>
             </DialogTitle>
             <DialogDescription>
               عرض كافة المعلومات والقيم المتاحة للمعامل
@@ -222,8 +296,8 @@ function TableComponent({
           {selectedType && (
             <ScrollArea className="max-h-[70vh] pr-4">
               <div className="space-y-6" dir="rtl">
-                {/* Basic Information */}
-                <Card >
+                {/* Basic Information Card - remains unchanged */}
+                <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">معلومات أساسية</CardTitle>
                   </CardHeader>
@@ -242,14 +316,10 @@ function TableComponent({
                         <p className="font-medium mt-1">{selectedType.label}</p>
                       </div>
                     </div>
-                    {/* <div>
-                      <p className="text-sm font-medium text-muted-foreground">تم التحديث بواسطة</p>
-                      <p className="mt-1">{selectedType.updatedBy}</p>
-                    </div> */}
                   </CardContent>
                 </Card>
 
-                {/* Values */}
+                {/* Values Card */}
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">القيم المتاحة</CardTitle>
@@ -258,6 +328,49 @@ function TableComponent({
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {isEditMode && (
+                      <div className="mb-6 space-y-4 border rounded-lg p-4">
+                        <h4 className="font-medium">إضافة قيمة جديدة</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="new-key">المعرف</Label>
+                            <Input
+                              id="new-key"
+                              value={newValue.key}
+                              onChange={(e) => setNewValue(prev => ({ ...prev, key: e.target.value }))}
+                              className="mt-1.5"
+                              dir="ltr"
+                              disabled={isUpdating}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-label">الوصف</Label>
+                            <Input
+                              id="new-label"
+                              value={newValue.label}
+                              onChange={(e) => setNewValue(prev => ({ ...prev, label: e.target.value }))}
+                              className="mt-1.5"
+                              disabled={isUpdating}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={handleAddValue}
+                            disabled={!newValue.key || !newValue.label || isUpdating}
+                            className="gap-1"
+                          >
+                            {isUpdating ? (
+                              <Spinner />
+                            ) : (
+                              <Plus className="h-4 w-4" />
+                            )}
+                            إضافة
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     <Accordion type="multiple" className="w-full">
                       {selectedType.values.map((values, index) => (
                         <AccordionItem key={index} value={`values-${index}`}>
@@ -271,6 +384,24 @@ function TableComponent({
                                 <Badge variant="secondary" className="text-xs">
                                   {values.linked_params.length} ارتباط
                                 </Badge>
+                              )}
+                              {isEditMode && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 ml-auto text-destructive hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleValueDelete(index)
+                                  }}
+                                  disabled={isUpdating}
+                                >
+                                  {isUpdating ? (
+                                    <Spinner />
+                                  ) : (
+                                    <Trash className="h-3 w-3" />
+                                  )}
+                                </Button>
                               )}
                             </div>
                           </AccordionTrigger>
