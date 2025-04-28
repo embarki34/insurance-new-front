@@ -5,10 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Loader2, Check, CalendarIcon, Trash, PlusCircle, Copy, ThumbsUp } from "lucide-react"
+import { Plus, Loader2, Check, CalendarIcon, Trash } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
-import { contractInput, objectInput } from "@/lib/input-Types"
+import { contractInput } from "@/lib/input-Types"
 import { createContract } from "@/data/contracts.service"
 import { getParameters } from "@/data/parameters.service"
 import { ObjectOutput, parameter } from "@/lib/output-Types"
@@ -24,8 +24,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { getObjects } from "@/data/object.service"
 import CreateObjects from "../objects/creatObjects"
 
-
-
 // Status options
 const statusOptions = [
   { value: "active", label: "Active", className: "text-green-500 font-bold hover:text-green-500" },
@@ -35,60 +33,6 @@ const statusOptions = [
 
 interface AddContractProps {
   onAdd: () => void
-}
-
-interface DetailObject {
-  id: number;
-  label: string;
-  value: string;
-  count: number;
-}
-
-interface SchemaAttribute {
-  id: string;
-  name: string;
-  type: 'text' | 'number' | 'boolean';
-}
-
-interface ObjectInstance {
-  id: string;
-  attributes: { [key: string]: string | number | boolean };
-}
-
-interface ParameterValue {
-  paramKey: string;
-  paramLabel: string;
-  values: {
-    valueKey: string;
-    valueLabel: string;
-    customValue: string;
-  }[];
-  id: string; // Unique ID for each parameter group
-}
-
-// Value structure from the parameter data
-interface ParamValue {
-  key: string;
-  label: string;
-  linked_params: any[];
-}
-
-// Define the actual parameter structure that we receive from the API
-interface ParameterWithValues {
-  id: string;
-  key: string;
-  label: string;
-  values: ParamValue[];
-}
-
-// Temporary parameter value inputs for form
-interface ParameterFormValues {
-  [key: string]: string;
-}
-
-// Add a type for the simplified parameter value format for API
-interface SimpleKeyValue {
-  [key: string]: string;
 }
 
 // Update the ContractWithParameters interface
@@ -111,76 +55,19 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     status: "",
     policyDocument: null,
   })
-  const [detailObjects, setDetailObjects] = useState<DetailObject[]>([])
-  const [newLabel, setNewLabel] = useState("")
-  const [newValue, setNewValue] = useState("")
-  const [newCount, setNewCount] = useState(1)
-  const [schemaAttributes, setSchemaAttributes] = useState<SchemaAttribute[]>([]);
-  const [schemaApproved, setSchemaApproved] = useState(false);
-  const [newAttributeName, setNewAttributeName] = useState("");
-  const [newAttributeType, setNewAttributeType] = useState<'text' | 'number' | 'boolean'>('text');
-  const [objectInstances, setObjectInstances] = useState<ObjectInstance[]>([]);
-  const [currentInstance, setCurrentInstance] = useState<{ [key: string]: any }>({});
   const [objects, setObjects] = useState<ObjectOutput[]>([]);
   const [selectedObjectType, setSelectedObjectType] = useState<string>("");
   const [filteredObjects, setFilteredObjects] = useState<ObjectOutput[]>([]);
   const [selectedObjectIds, setSelectedObjectIds] = useState<string[]>([]);
   const [showCreateObjectDialog, setShowCreateObjectDialog] = useState(false);
-
-  // New states for parameters
-  const [parameters, setParameters] = useState<ParameterWithValues[]>([])
-  const [selectedParameter, setSelectedParameter] = useState<string>("")
-  const [parameterValues, setParameterValues] = useState<ParameterValue[]>([])
-  const [isLoadingParameters, setIsLoadingParameters] = useState(false)
-  const [parameterFormValues, setParameterFormValues] = useState<ParameterFormValues>({})
   const [insuranceTypes, setInsuranceTypes] = useState<parameter[]>([])
   const [refetch, setRefetch] = useState(false);
-
-  // Fetch parameters on component mount
-  useEffect(() => {
-    if (open) {
-      fetchParameters()
-    }
-  }, [open])
-
-  const fetchParameters = async () => {
-    setIsLoadingParameters(true)
-    try {
-      const response = await getParameters().then((response) => {
-        const filteredResponse = response.filter((param) => param.key !== "type_dassurance")
-        return filteredResponse
-      })
-      // Convert the response to match our ParameterWithValues interface
-      const formattedParameters = response.map(param => {
-
-        const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
-          ? (param.values as unknown as ParamValue[])
-          : (param.values as unknown as ParamValue[])
-
-        return {
-          ...param,
-          values: formattedValues
-        }
-      })
-
-      setParameters(formattedParameters as ParameterWithValues[])
-    } catch (error) {
-      console.error("Error fetching parameters:", error)
-      toast.error("Échec de la récupération des paramètres")
-    } finally {
-      setIsLoadingParameters(false)
-    }
-  }
-
-
-
 
   useEffect(() => {
     const fetchInsuranceTypes = async () => {
       try {
         const parameters = await getParameters();
         const insuranceTypes = parameters.filter((type) => type.key === "type_dassurance");
-        console.log(insuranceTypes)
         setInsuranceTypes(insuranceTypes);
       } catch (error) {
         console.error("Error fetching insurance types:", error);
@@ -230,73 +117,6 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     setShowCreateObjectDialog(false);
   };
 
-  // When parameter selection changes
-  const handleParameterChange = (value: string) => {
-    setSelectedParameter(value)
-    // Reset form values when parameter changes
-    setParameterFormValues({})
-  }
-
-  // Handle changes in the form values
-  const handleParameterFormChange = (valueKey: string, value: string) => {
-    setParameterFormValues(prev => ({
-      ...prev,
-      [valueKey]: value
-    }))
-  }
-
-  // Modify the addParameterValues function to group all values into a single object
-  const addParameterValues = () => {
-    // Get the selected parameter
-    const selectedParam = parameters.find(param => param.key === selectedParameter)
-    if (!selectedParam) return
-
-    // Process the form values and group them into key-value pairs
-    const filledValues = Object.entries(parameterFormValues)
-      .filter(([_, value]) => value.trim() !== '')
-      .map(([valueKey, customValue]) => {
-        const paramValue = selectedParam.values.find(val => val.key === valueKey)
-        if (!paramValue) return null
-
-        return {
-          key: paramValue.key,
-          label: paramValue.label,
-          value: customValue
-        }
-      })
-      .filter(Boolean) as { key: string; label: string; value: string }[]
-
-    if (filledValues.length === 0) {
-      toast.error("Veuillez remplir au moins un champ")
-      return
-    }
-
-    // Create a single parameter value object with all the values
-    const newParameterValueObject: ParameterValue = {
-      paramKey: selectedParam.key,
-      paramLabel: selectedParam.label,
-      values: filledValues.map(val => ({
-        valueKey: val.key,
-        valueLabel: val.label,
-        customValue: val.value
-      })),
-      id: Date.now().toString() // Add a unique ID
-    }
-
-    // Add the new parameter value object to the list
-    setParameterValues(prev => [...prev, newParameterValueObject])
-
-    // Reset just the form values but keep the selected parameter
-    setParameterFormValues({})
-
-    toast.success(`Nouveau groupe de valeurs ajouté avec succès`)
-  }
-
-  // Update the removeParameterValue function
-  const removeParameterValue = (id: string) => {
-    setParameterValues(prev => prev.filter(param => param.id !== id))
-  }
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
     setContractData(prev => ({ ...prev, [id]: value }))
@@ -327,20 +147,15 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     }
   };
 
-  // Update the handleSubmit function
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      // Use the selectedObjectIds directly
       const contractWithDetails: ContractWithObjectDetails = {
         ...contractData,
-        insuredList: selectedObjectIds // Just use the array of IDs
+        insuredList: selectedObjectIds
       };
 
-      console.log("Sending contract data:", JSON.stringify(contractWithDetails, null, 2));
-
-      // Use the contractWithDetails object with the object IDs
       await createContract(contractWithDetails as any);
       toast.success("Le contrat a été créé avec succès");
       onAdd();
@@ -351,121 +166,6 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     setIsSubmitting(false);
     setOpen(false);
   }
-
-  const addDetailObject = () => {
-    if (newLabel.trim() === "" || newValue.trim() === "") return;
-
-    setDetailObjects([
-      ...detailObjects,
-      {
-        id: Date.now(),
-        label: newLabel,
-        value: newValue,
-        count: newCount
-      }
-    ]);
-
-    // Keep the count, clear the other fields
-    setNewLabel("");
-    setNewValue("");
-  };
-
-  const deleteDetailObject = (id: number) => {
-    setDetailObjects(detailObjects.filter(obj => obj.id !== id));
-  };
-
-  const getColorForCount = (count: number) => {
-    const colors = [
-      "bg-blue-100 border-blue-300",
-      "bg-green-100 border-green-300",
-      "bg-yellow-100 border-yellow-300",
-      "bg-purple-100 border-purple-300",
-      "bg-red-100 border-red-300",
-      "bg-orange-100 border-orange-300",
-      "bg-indigo-100 border-indigo-300",
-      "bg-pink-100 border-pink-300"
-    ];
-
-    return colors[(count - 1) % colors.length];
-  };
-
-  const addAttributeToSchema = () => {
-    if (!newAttributeName.trim()) return;
-
-    const newAttribute: SchemaAttribute = {
-      id: Date.now().toString(),
-      name: newAttributeName,
-      type: newAttributeType
-    };
-
-    setSchemaAttributes([...schemaAttributes, newAttribute]);
-    setNewAttributeName("");
-  };
-
-  const removeAttributeFromSchema = (id: string) => {
-    setSchemaAttributes(schemaAttributes.filter(attr => attr.id !== id));
-  };
-
-  const approveSchema = () => {
-    if (schemaAttributes.length === 0) return;
-    setSchemaApproved(true);
-    setCurrentInstance({});
-  };
-
-  const resetSchema = () => {
-    if (window.confirm("Are you sure? This will delete all objects and reset the schema.")) {
-      setSchemaApproved(false);
-      setSchemaAttributes([]);
-      setObjectInstances([]);
-      setCurrentInstance({});
-    }
-  };
-
-  const updateCurrentInstance = (attributeId: string, value: any) => {
-    const attribute = schemaAttributes.find(attr => attr.id === attributeId);
-    if (!attribute) return;
-
-    let processedValue = value;
-    if (attribute.type === 'number') {
-      processedValue = value === '' ? '' : Number(value);
-    } else if (attribute.type === 'boolean') {
-      processedValue = Boolean(value);
-    }
-
-    setCurrentInstance({
-      ...currentInstance,
-      [attribute.name]: processedValue
-    });
-  };
-
-  const addObjectInstance = () => {
-    const newInstance: ObjectInstance = {
-      id: Date.now().toString(),
-      attributes: { ...currentInstance }
-    };
-
-    setObjectInstances([...objectInstances, newInstance]);
-    setCurrentInstance({});
-  };
-
-  const removeObjectInstance = (id: string) => {
-    setObjectInstances(objectInstances.filter(obj => obj.id !== id));
-  };
-
-  const duplicateObjectInstance = (id: string) => {
-    const instanceToDuplicate = objectInstances.find(obj => obj.id === id);
-    if (!instanceToDuplicate) return;
-
-    const newInstance: ObjectInstance = {
-      id: Date.now().toString(),
-      attributes: { ...instanceToDuplicate.attributes }
-    };
-
-    setObjectInstances([...objectInstances, newInstance]);
-  };
-
-  // Get the selected parameter object
-  const selectedParameterObject = parameters.find(p => p.key === selectedParameter);
 
   return (
     <div className="flex items-center justify-end ">
@@ -765,9 +465,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                               <SelectValue placeholder="Sélectionnez un type d'objet" />
                             </SelectTrigger>
                             <SelectContent>
-                              {parameters.map((param) => (
-                                <SelectItem key={param.id} value={param.key}>
-                                  {param.label}
+                              {objects.map((object) => (
+                                <SelectItem key={object.id} value={object.objectType}>
+                                  {object.objectType}
                                 </SelectItem>
                               ))}
                             </SelectContent>

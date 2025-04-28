@@ -1,7 +1,6 @@
-import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Map, Calendar, DollarSign } from "lucide-react";
+import { Building2, Map, Calendar } from "lucide-react";
 import { SiteOutput } from '@/lib/output-Types';
 
 function SiteCard({ site }: { site: SiteOutput }) {
