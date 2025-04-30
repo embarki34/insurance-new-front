@@ -22,8 +22,8 @@ import { useNavigate } from "react-router-dom"
 function zoneEtSites() {
   const navigate = useNavigate()
 
-//   const [zones, setZones] = useState<ZoneOutput[]>([])
-  const [zones, setZones] = useRecoilState<ZoneOutput[]>(zoneAtom)
+  const [zones, setZones] = useState<ZoneOutput[]>([])
+//   const [zones, setZones] = useRecoilState<ZoneOutput[]>(zoneAtom)
 
   const [filteredZones, setFilteredZones] = useState<ZoneOutput[]>([])
   const [isLoading, setIsLoading] = useState(true)

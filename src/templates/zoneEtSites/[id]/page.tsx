@@ -37,6 +37,10 @@ function ZoneDetails() {
         setRefresh(!refresh);
     }
 
+    const handleEditSite = () => {
+        setRefresh(!refresh);
+    }
+
     // Calculate zone statistics
     const calculateStats = () => {
         if (!zone?.sites || zone.sites.length === 0) {
@@ -166,7 +170,7 @@ function ZoneDetails() {
                 {filteredSites.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-6">
                         {filteredSites.map((site: SiteOutput) => (
-                            <SiteCard key={site.id} site={site} />
+                            <SiteCard key={site.id} site={site} onEdit={handleEditSite} />
                         ))}
                     </div>
                 ) : (

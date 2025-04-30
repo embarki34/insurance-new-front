@@ -7,6 +7,10 @@ import {
   LifeBuoy,
   Send,
   Settings2,
+  Shield,
+  Building,
+  Map,
+  Box
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -37,13 +41,29 @@ const data = {
     {
       title: "Objets",
       url: "/objects",
-      icon: Send,
+      icon: Box,
     },
     {
       title: "Zones ",
       url: "/zone-et-sites",
+      icon: Map,
+    },
+    {
+      title: "Sociétés",
+      url: "/societe",
       icon: Building2,
     },
+    {
+      title: "Compagnies d'assurance",
+      url: "/insurance-campanises",
+      icon: Building,
+    },
+    {
+      title: "Garanties",
+      url: "/garanties",
+      icon: Shield   ,
+    },
+   
   ],
   navSecondary: [
     {
@@ -89,7 +109,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavSettings items={data.navSettings} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         {/* <NavUser user={data.user} /> */}

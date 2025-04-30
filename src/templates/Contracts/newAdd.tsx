@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -43,6 +41,9 @@ interface ContractWithObjectDetails extends contractInput {
 const AddContract = ({ onAdd }: AddContractProps) => {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentStep, setCurrentStep] = useState("company")
+  const [showValidation, setShowValidation] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [contractData, setContractData] = useState<contractInput>({
     type_id: "",
     policyNumber: "",
@@ -62,22 +63,83 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [showCreateObjectDialog, setShowCreateObjectDialog] = useState(false);
   const [insuranceTypes, setInsuranceTypes] = useState<parameter[]>([])
   const [refetch, setRefetch] = useState(false);
+  const [societe, setSociete] = useState<parameter[]>([]);
+  const [compagnie_dassurance, setCompagnie_dassurance] = useState<parameter[]>([]);
+
+  const [selectedSociete, setSelectedSociete] = useState<string>("");
+  const [selectedCompagnie_dassurance, setSelectedCompagnie_dassurance] = useState<string>("");
+
+  const steps = ["company", "police", "garanties", "details"]
+
+  const getNextStep = () => {
+    const currentIndex = steps.indexOf(currentStep)
+    return steps[currentIndex + 1]
+  }
+
+  const getPreviousStep = () => {
+    const currentIndex = steps.indexOf(currentStep)
+    return steps[currentIndex - 1]
+  }
+
+  const handleNext = () => {
+    const nextStep = getNextStep()
+    if (nextStep) {
+      setCurrentStep(nextStep)
+    }
+  }
+
+  const handlePrevious = () => {
+    const previousStep = getPreviousStep()
+    if (previousStep) {
+      setCurrentStep(previousStep)
+    }
+  }
+
+  const validateForm = () => {
+    const errors: string[] = []
+
+    // Company tab validation
+    if (!selectedSociete) errors.push("societe")
+    if (!selectedCompagnie_dassurance) errors.push("compagnie_dassurance")
+
+    // Police tab validation
+    if (!contractData.type_id) errors.push("type_id")
+    if (!contractData.policyNumber) errors.push("policyNumber")
+    if (!contractData.insuredAmount) errors.push("insuredAmount")
+    if (!contractData.primeAmount) errors.push("primeAmount")
+    if (!contractData.startDate) errors.push("startDate")
+    if (!contractData.endDate) errors.push("endDate")
+    if (!contractData.status) errors.push("status")
+
+    // Details tab validation (if you want to require at least one object)
+    if (selectedObjectIds.length === 0) errors.push("objects")
+
+    return errors
+  }
 
   useEffect(() => {
     const fetchInsuranceTypes = async () => {
       try {
         const parameters = await getParameters();
-        const insuranceTypes = parameters.filter((type) => type.key === "type_dassurance");
+        const insuranceTypes = parameters.filter((type) => type.key === "type_de_police");
+        const societe = parameters.filter((type) => type.key === "societe");
+        const compagnie_dassurance = parameters.filter((type) => type.key === "compagnie_dassurance");
         setInsuranceTypes(insuranceTypes);
+        setSociete(societe);
+        setCompagnie_dassurance(compagnie_dassurance);
       } catch (error) {
         console.error("Error fetching insurance types:", error);
       }
     };
 
+
+    
+
     const fetchObjects = async () => {
       try {
         const objectsData = await getObjects();
         setObjects(objectsData.objects);
+        console.log(objectsData.objects)
       } catch (error) {
         console.error("Error fetching objects:", error);
       }
@@ -149,6 +211,25 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setShowValidation(true)
+    
+    const errors = validateForm()
+    setValidationErrors(errors)
+
+    if (errors.length > 0) {
+      // Find the first tab with errors and switch to it
+      if (errors.some(error => ["societe", "compagnie_dassurance"].includes(error))) {
+        setCurrentStep("company")
+      } else if (errors.some(error => ["type_id", "policyNumber", "insuredAmount", "primeAmount", "startDate", "endDate", "status"].includes(error))) {
+        setCurrentStep("police")
+      } else if (errors.includes("objects")) {
+        setCurrentStep("details")
+      }
+      
+      toast.error("Veuillez remplir tous les champs obligatoires")
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const contractWithDetails: ContractWithObjectDetails = {
@@ -159,36 +240,111 @@ const AddContract = ({ onAdd }: AddContractProps) => {
       await createContract(contractWithDetails as any);
       toast.success("Le contrat a été créé avec succès");
       onAdd();
+      setOpen(false);
     } catch (error) {
       console.error("Error creating contract:", error);
       toast.error("Une erreur s'est produite lors de la création du contrat");
     }
     setIsSubmitting(false);
-    setOpen(false);
   }
 
   return (
-    <div className="flex items-center justify-end ">
+    <div className="flex items-center justify-end">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="bg-primary hover:bg-primary/90 transition-colors">
             <Plus className="mr-2 h-4 w-4" />
-            Ajouter un nouveau contrat (avec paramètres et détails)
+            Ajouter un nouveau contrat
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-7xl w-full overflow-y-auto p-6 bg-background shadow-lg rounded-lg">
+        <DialogContent className="sm:max-w-[70vw] max-h-[90vh] w-full overflow-y-auto p-6 bg-background shadow-lg rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center mb-4">Ajouter un nouveau contrat</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Tabs defaultValue="general">
+            <Tabs value={currentStep} onValueChange={setCurrentStep}>
               <TabsList className="w-full mb-6">
-                <TabsTrigger value="general" className="flex-1">Général</TabsTrigger>
-                <TabsTrigger value="details" className="flex-1">Détails</TabsTrigger>
+                <TabsTrigger value="company" className="flex-1">
+                  Informations de la compagnie
+                  {showValidation && validationErrors.some(error => ["societe", "compagnie_dassurance"].includes(error)) && 
+                    <span className="ml-2 text-red-500">*</span>
+                  }
+                </TabsTrigger>
+                <TabsTrigger value="police" className="flex-1">
+                  Détails de la police
+                  {showValidation && validationErrors.some(error => ["type_id", "policyNumber", "insuredAmount", "primeAmount", "startDate", "endDate", "status"].includes(error)) && 
+                    <span className="ml-2 text-red-500">*</span>
+                  }
+                </TabsTrigger>
+                <TabsTrigger value="garanties" className="flex-1">Garanties</TabsTrigger>
+                <TabsTrigger value="details" className="flex-1">
+                  Détails des objets
+                  {showValidation && validationErrors.includes("objects") && 
+                    <span className="ml-2 text-red-500">*</span>
+                  }
+                </TabsTrigger>
               </TabsList>
+              <TabsContent value="company">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="societe" className="text-sm font-semibold flex items-center gap-1">
+                        <span className="text-red-500">*</span>
+                        Société
+                      </Label>
+                      <Select
+                        value={selectedSociete}
+                        onValueChange={(value) => setSelectedSociete(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Sélectionnez une société" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {societe.map((societe) => (
+                            societe.values.map((value) => (
+                              <SelectItem key={value.key} value={value.key}>
+                                {value.label}
+                              </SelectItem>
+                            ))
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="compagnie_dassurance" className="text-sm font-semibold flex items-center gap-1">
+                        <span className="text-red-500">*</span>
+                        Compagnie d'assurance
+                      </Label>
+                      <Select
+                        value={selectedCompagnie_dassurance}
+                        onValueChange={(value) => setSelectedCompagnie_dassurance(value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Sélectionnez une compagnie d'assurance" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {compagnie_dassurance.map((compagnie_dassurance) => (
+                            compagnie_dassurance.values.map((value) => (
+                              <SelectItem key={value.key} value={value.key}>
+                                {value.label}
+                              </SelectItem>
+                            ))
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              </TabsContent>
 
-              <TabsContent value="general">
+
+
+
+
+              <TabsContent value="police">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="grid grid-cols-1 gap-6">
@@ -267,35 +423,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="insuranceCompanyName" className="text-sm font-semibold flex items-center gap-1">
-                          <span className="text-red-500">*</span>
-                          Nom de la compagnie d'assurance
-                        </Label>
-                        <Input
-                          id="insuranceCompanyName"
-                          value={contractData.insuranceCompanyName}
-                          onChange={handleChange}
-                          required
-                          placeholder="Entrez le nom de la compagnie d'assurance"
-                          className="transition-all focus-visible:ring-primary"
-                        />
-                      </div>
+                      
 
-                      <div className="space-y-2">
-                        <Label htmlFor="holderName" className="text-sm font-semibold flex items-center gap-1">
-                          <span className="text-red-500">*</span>
-                          Nom du titulaire de la police
-                        </Label>
-                        <Input
-                          id="holderName"
-                          value={contractData.holderName}
-                          onChange={handleChange}
-                          required
-                          placeholder="Entrez le nom du titulaire de la police"
-                          className="transition-all focus-visible:ring-primary"
-                        />
-                      </div>
+                      
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -389,6 +519,17 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                 </Card>
               </TabsContent>
 
+
+
+
+
+              <TabsContent value="garanties">
+                
+              </TabsContent>
+
+
+             
+
               <TabsContent value="details">
                 <Card>
                   <CardContent className="pt-6">
@@ -446,11 +587,11 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                       <div className="md:col-span-2 space-y-4">
                         <div className="flex justify-between items-center">
                           <h3 className="text-lg font-semibold">Sélectionner des objets</h3>
-                      
-                            <CreateObjects
-                              onObjectsCreated={handleObjectCreated}
-                            />
-                       
+
+                          <CreateObjects
+                            onObjectsCreated={handleObjectCreated}
+                          />
+
                         </div>
 
                         <div className="mb-4">
@@ -465,9 +606,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                               <SelectValue placeholder="Sélectionnez un type d'objet" />
                             </SelectTrigger>
                             <SelectContent>
-                              {objects.map((object) => (
-                                <SelectItem key={object.id} value={object.objectType}>
-                                  {object.objectType}
+                              {[...new Set(objects.map(obj => obj.objectType))].map((objectType) => (
+                                <SelectItem key={objectType} value={objectType}>
+                                  {objectType}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -538,35 +679,53 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+
+
+
+
+
             </Tabs>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-between mt-6">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
-                className="min-w-24"
+                onClick={handlePrevious}
+                disabled={currentStep === steps[0]}
               >
-                Annuler
+                Précédent
               </Button>
 
-              <Button
-                type="submit"
-                className="bg-primary hover:bg-primary/90 min-w-32 transition-colors"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    En cours d'enregistrement...
-                  </>
+              <div className="flex gap-3">
+                {currentStep !== steps[steps.length - 1] ? (
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Suivant
+                  </Button>
                 ) : (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Enregistrer le contrat
-                  </>
+                  <Button
+                    type="submit"
+                    className="bg-primary hover:bg-primary/90"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        En cours d'enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        Enregistrer le contrat
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
+              </div>
             </div>
           </form>
         </DialogContent>

@@ -13,4 +13,16 @@ export const createSite = async (zoneId: string, site: SiteInput) => {
 }
 
 
+// export const updateSite = async (siteId: string, site: SiteInput) => {
+//     const response = await axiosInstance.put(`${endpoint}/${siteId}`, { ...site ,batiments });
+//     return response.data;
+// }
+
+
+export const addBatiment = async (siteId: string, batimentId: string[]) => {
+    const response = await axiosInstance.put(`${endpoint}/${siteId}`, { batiments: batimentId });
+    return response.data;
+}
+
+
 

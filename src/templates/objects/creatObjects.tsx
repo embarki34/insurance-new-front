@@ -96,7 +96,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
       const response = await getParameters()
       // Convert the response to match our ParameterWithValues interface
       const formattedParameters = response
-        .filter(param => param.key !== "type_dassurance") // Remove type_dassurance and its values
+        .filter(param => param.key !== "type_de_police" && param.key !== "compagnie_dassurance" && param.key !== "societe") // Remove type_dassurance and its values
         .map(param => {
           const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
             ? (param.values as unknown as ParamValue[])
@@ -407,6 +407,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
                         {selectedParameterObject.label}
                       </Badge>
                     )}
+                  
                   </div>
 
                   <div className="flex-1 overflow-y-auto pr-2 -mr-2">

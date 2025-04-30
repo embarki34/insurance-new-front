@@ -180,15 +180,15 @@ const TableComponent = ({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex space-x-2 justify-end">
+                  <div className="flex space-x-2 justify-end gap-4">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openDetails(object)}
-                            className="h-8 w-8"
+                            className="h-4 w-4"
                           >
                             <Eye className="h-8 w-8" />
                           </Button>
@@ -207,7 +207,7 @@ const TableComponent = ({
                               variant="outline"
                               size="sm"
                               onClick={() => onEdit(object.id)} 
-                              className="h-8 w-8"
+                              className="h-4 w-4"
                             >
                               <Pen className="h-8 w-8" />
                             </Button>
@@ -224,10 +224,10 @@ const TableComponent = ({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
-                              size="sm"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => onDelete(object.id)}
-                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              className="h-4 w-4 text-destructive hover:bg-destructive/10"
                             >
                               <Trash className="h-4 w-4" />
                             </Button>

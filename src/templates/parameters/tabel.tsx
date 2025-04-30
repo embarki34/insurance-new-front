@@ -97,10 +97,10 @@ function TableComponent({
 
       setSelectedType(updatedParameter)
       onEdit(selectedType.id)
-      toast.success("تم حذف القيمة بنجاح")
+      toast.success("La valeur a été supprimée avec succès")
     } catch (error) {
-      console.error("Error deleting value:", error)
-      toast.error("حدث خطأ أثناء حذف القيمة")
+      console.error("Erreur lors de la suppression de la valeur :", error)
+      toast.error("Une erreur s'est produite lors de la suppression de la valeur")
     } finally {
       setIsUpdating(false)
     }
@@ -126,10 +126,10 @@ function TableComponent({
       setSelectedType(updatedParameter)
       onEdit(selectedType.id)
       setNewValue({ key: "", label: "" })
-      toast.success("تمت إضافة القيمة بنجاح")
+      toast.success("La valeur a été ajoutée avec succès")
     } catch (error) {
-      console.error("Error adding value:", error)
-      toast.error("حدث خطأ أثناء إضافة القيمة")
+      console.error("Erreur lors de l'ajout de la valeur :", error)
+      toast.error("Une erreur s'est produite lors de l'ajout de la valeur")
     } finally {
       setIsUpdating(false)
     }
@@ -147,9 +147,9 @@ function TableComponent({
     return (
       <div className="w-full flex flex-col items-center justify-center py-12">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">لا توجد بيانات</h3>
+        <h3 className="text-lg font-medium">Aucune donnée disponible</h3>
         <p className="text-sm text-muted-foreground mt-2 text-center max-w-md">
-          لا توجد أنواع إجراءات ملاحظة متاحة حالياً. يمكنك إضافة نوع جديد باستخدام زر "إضافة معامل جديد".
+          Aucun type d'action n'est actuellement disponible. Vous pouvez ajouter un nouveau type en utilisant le bouton "Ajouter un nouveau paramètre".
         </p>
       </div>
     )
@@ -167,7 +167,7 @@ function TableComponent({
                 onClick={() => handleSort("key")}
               >
                 <div className="flex items-center">
-                  المعرف
+                  Identifiant
                   <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "key" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
@@ -176,12 +176,12 @@ function TableComponent({
                 onClick={() => handleSort("label")}
               >
                 <div className="flex items-center">
-                  الوصف
+                  Description
                   <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "label" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
-              <TableHead className="text-right">القيم</TableHead>
-              <TableHead className="text-left">الإجراءات</TableHead>
+              <TableHead className="text-right">Valeurs</TableHead>
+              <TableHead className="text-left">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -226,7 +226,7 @@ function TableComponent({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>عرض التفاصيل</p>
+                          <p>Voir les détails</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -244,7 +244,7 @@ function TableComponent({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>تعديل</p>
+                          <p>Modifier</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -262,7 +262,7 @@ function TableComponent({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>حذف</p>
+                          <p>Supprimer</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -274,17 +274,17 @@ function TableComponent({
         </Table>
       </div>
 
-      {/* Details Dialog */}
+      {/* Détails du dialogue */}
       <Dialog open={detailsOpen} onOpenChange={(open) => {
         setDetailsOpen(open);
         if (!open) {
-          onClose(); // Call onClose when dialog is closed
+          onClose(); // Appeler onClose lorsque le dialogue est fermé
         }
       }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              تفاصيل المعامل
+              Détails du paramètre
               <Button
                 variant="ghost"
                 size="icon"
@@ -296,22 +296,22 @@ function TableComponent({
               </Button>
             </DialogTitle>
             <DialogDescription>
-              عرض كافة المعلومات والقيم المتاحة للمعامل
+              Afficher toutes les informations et valeurs disponibles pour le paramètre
             </DialogDescription>
           </DialogHeader>
 
           {selectedType && (
             <ScrollArea className="max-h-[70vh] pr-4">
               <div className="space-y-6" dir="rtl">
-                {/* Basic Information Card */}
+                {/* Carte d'informations de base */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">معلومات أساسية</CardTitle>
+                    <CardTitle className="text-lg">Informations de base</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">المعرف</p>
+                        <p className="text-sm font-medium text-muted-foreground">Identifiant</p>
                         <p className="font-mono text-sm mt-1">
                           <Badge variant="outline" className="font-mono">
                             {selectedType.key}
@@ -319,28 +319,28 @@ function TableComponent({
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">الوصف</p>
+                        <p className="text-sm font-medium text-muted-foreground">Description</p>
                         <p className="font-medium mt-1">{selectedType.label}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Values Card */}
+                {/* Carte des valeurs */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">القيم المتاحة</CardTitle>
+                    <CardTitle className="text-lg">Valeurs disponibles</CardTitle>
                     <CardDescription>
-                      {selectedType.values.length} قيمة متاحة لهذا المعامل
+                      {selectedType.values.length} valeur(s) disponible(s) pour ce paramètre
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {isEditMode && (
                       <div className="mb-6 space-y-4 border rounded-lg p-4">
-                        <h4 className="font-medium">إضافة قيمة جديدة</h4>
+                        <h4 className="font-medium">Ajouter une nouvelle valeur</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="new-key">المعرف</Label>
+                            <Label htmlFor="new-key">Identifiant</Label>
                             <Input
                               id="new-key"
                               value={newValue.key}
@@ -351,7 +351,7 @@ function TableComponent({
                             />
                           </div>
                           <div>
-                            <Label htmlFor="new-label">الوصف</Label>
+                            <Label htmlFor="new-label">Description</Label>
                             <Input
                               id="new-label"
                               value={newValue.label}
@@ -372,7 +372,7 @@ function TableComponent({
                             ) : (
                               <Plus className="h-4 w-4" />
                             )}
-                            إضافة
+                            Ajouter
                           </Button>
                         </div>
                       </div>
@@ -389,7 +389,7 @@ function TableComponent({
                               </Badge>
                               {values.linked_params && values.linked_params.length > 0 && (
                                 <Badge variant="secondary" className="text-xs">
-                                  {values.linked_params.length} ارتباط
+                                  {values.linked_params.length} lien(s)
                                 </Badge>
                               )}
                               {isEditMode && (
@@ -415,7 +415,7 @@ function TableComponent({
                           <AccordionContent>
                             {values.linked_params && values.linked_params.length > 0 ? (
                               <div className="space-y-3 pt-2">
-                                <h4 className="text-sm font-medium">المعاملات المرتبطة:</h4>
+                                <h4 className="text-sm font-medium">Paramètres liés :</h4>
                                 <div className="space-y-3">
                                   {values.linked_params.map((param, i) => (
                                     <div key={i} className="bg-muted p-3 rounded-md">
@@ -424,7 +424,7 @@ function TableComponent({
                                         <span className="font-medium">{param.param_key}</span>
                                       </div>
                                       <div className="mt-2">
-                                        <p className="text-sm text-muted-foreground mb-1">القيم المسموح بها:</p>
+                                        <p className="text-sm text-muted-foreground mb-1">Valeurs autorisées :</p>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                           {param.allowed_values.map((val: string, j: number) => (
                                             <Badge key={j} variant="outline" className="text-xs">
@@ -439,7 +439,7 @@ function TableComponent({
                               </div>
                             ) : (
                               <p className="text-sm text-muted-foreground py-2">
-                                لا توجد معاملات مرتبطة بهذه القيمة.
+                                Aucun paramètre lié à cette valeur.
                               </p>
                             )}
                           </AccordionContent>
