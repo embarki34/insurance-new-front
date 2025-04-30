@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
 import { pagination as paginationType } from "@/lib/output-Types"
-import AddContract from "./newAdd"
+import AddContract from "./creat-new-contract"
 // import CreateObjects from "../objects/creatObjects"
 
 export default function Contracts() {

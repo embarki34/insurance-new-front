@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { contractInput } from "@/lib/input-Types"
 import { createContract } from "@/data/contracts.service"
 import { getParameters } from "@/data/parameters.service"
-import { ObjectOutput, parameter } from "@/lib/output-Types"
+import { CompagnieOutput, InsuranceCampaniseOutput, ObjectOutput, parameter } from "@/lib/output-Types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/format"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getObjects } from "@/data/object.service"
 import CreateObjects from "../objects/creatObjects"
+import { getCompagnies } from "@/data/societes.service"
+import { getInsuranceCampanises } from "@/data/insuranceCampanise.service"
 
 // Status options
 const statusOptions = [
@@ -63,8 +65,8 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [showCreateObjectDialog, setShowCreateObjectDialog] = useState(false);
   const [insuranceTypes, setInsuranceTypes] = useState<parameter[]>([])
   const [refetch, setRefetch] = useState(false);
-  const [societe, setSociete] = useState<parameter[]>([]);
-  const [compagnie_dassurance, setCompagnie_dassurance] = useState<parameter[]>([]);
+  const [societe, setSociete] = useState<CompagnieOutput[]>([]);
+  const [compagnie_dassurance, setCompagnie_dassurance] = useState<InsuranceCampaniseOutput[]>([]);
 
   const [selectedSociete, setSelectedSociete] = useState<string>("");
   const [selectedCompagnie_dassurance, setSelectedCompagnie_dassurance] = useState<string>("");
@@ -121,9 +123,13 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     const fetchInsuranceTypes = async () => {
       try {
         const parameters = await getParameters();
+        const societe = await getCompagnies();
+        const compagnie_dassurance = await getInsuranceCampanises();
+
+        
         const insuranceTypes = parameters.filter((type) => type.key === "type_de_police");
-        const societe = parameters.filter((type) => type.key === "societe");
-        const compagnie_dassurance = parameters.filter((type) => type.key === "compagnie_dassurance");
+        // const societe = parameters.filter((type) => type.key === "societe");
+        // const compagnie_dassurance = parameters.filter((type) => type.key === "compagnie_dassurance");
         setInsuranceTypes(insuranceTypes);
         setSociete(societe);
         setCompagnie_dassurance(compagnie_dassurance);
@@ -303,11 +309,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           {societe.map((societe) => (
-                            societe.values.map((value) => (
-                              <SelectItem key={value.key} value={value.key}>
-                                {value.label}
-                              </SelectItem>
-                            ))
+                            <SelectItem key={societe.informations_generales.raison_sociale} value={societe.informations_generales.raison_sociale}>
+                              {societe.informations_generales.raison_sociale}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -326,9 +330,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           {compagnie_dassurance.map((compagnie_dassurance) => (
-                            compagnie_dassurance.values.map((value) => (
-                              <SelectItem key={value.key} value={value.key}>
-                                {value.label}
+                            compagnie_dassurance.donnees_specifiques_assurance.produits_assurance.map((value) => (
+                              <SelectItem key={value} value={value}>
+                                {value}
                               </SelectItem>
                             ))
                           ))}
