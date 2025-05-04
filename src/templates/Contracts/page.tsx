@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Pagination from "../parameters/pagination"
-import { File, Search, Filter, AlertCircle, Paperclip, Plus } from "lucide-react"
+import { File, Search, Filter, AlertCircle, Paperclip } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -44,9 +44,9 @@ export default function Contracts() {
     }
   }
 
-  const handleEditing = (id: string) => {
-    console.log(id)
-  }
+  // const handleEditing = (id: string) => {
+  //   console.log(id)
+  // }
   const handleAdding = () => {
     setRefresh(!refresh)
   }

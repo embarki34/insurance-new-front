@@ -3,7 +3,7 @@ import { ZoneDetailsOutput, SiteOutput } from '@/lib/output-Types';
 import { useParams } from 'react-router-dom';
 import { getZoneById } from '@/data/zone.service';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Building2, MapPin } from 'lucide-react';
 import SiteCard from '@/components/site-card';
 import { Button } from "@/components/ui/button";

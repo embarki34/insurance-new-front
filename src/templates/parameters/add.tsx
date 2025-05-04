@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { parameter } from "@/lib/output-Types"
+// import { parameter } from "@/lib/output-Types"
 
 // Add these type definitions at the top after imports
 interface ParameterValue {
@@ -164,13 +164,13 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     }
   }
 
-  const toggleDependencies = (checked: boolean) => {
-    setNewValue((prev) => ({
-      ...prev,
-      hasDependencies: checked,
-      linked_params: checked ? prev.linked_params : [],
-    }))
-  }
+  // const toggleDependencies = (checked: boolean) => {
+  //   setNewValue((prev) => ({
+  //     ...prev,
+  //     hasDependencies: checked,
+  //     linked_params: checked ? prev.linked_params : [],
+  //   }))
+  // }
 
   const selectParameter = (paramKey: string) => {
     setNewLinkedParam((prev) => ({

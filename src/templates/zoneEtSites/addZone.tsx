@@ -10,13 +10,13 @@ import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createZone } from "@/data/zone.service"
 import { ZoneOutput } from "@/lib/output-Types"
-import { useNavigate } from "react-router-dom"
+// import { useNavigate } from "react-router-dom"
 
 const AddZone = ({ onAdd }: { onAdd: (response: ZoneOutput) => void }) => {
-    const navigate = useNavigate()
+    // const navigate = useNavigate()
     const [open, setOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [selectedZone, setSelectedZone] = useState<ZoneOutput | null>(null)
+    // const [selectedZone, setSelectedZone] = useState<ZoneOutput | null>(null)
     const [zoneData, setZoneData] = useState({
         name: "",
         address: ""

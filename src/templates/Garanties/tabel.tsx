@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge"
 import { garantiesOutput } from "@/lib/output-Types"
 import { deleteGarantie } from "@/data/garanties.service"
 import { toast } from "sonner"
-import { Pen, Trash2, AlertCircle, ArrowUpDown, Eye } from "lucide-react"
+import {  Trash2, AlertCircle, ArrowUpDown, Eye } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -43,7 +43,7 @@ interface GarantiesTableProps {
   isLoading?: boolean
 }
 
-const GarantiesTable = ({ garanties, onEdit, onDelete, isLoading = false }: GarantiesTableProps) => {
+const GarantiesTable = ({ garanties,  onDelete, isLoading = false }: GarantiesTableProps) => {
   const [sortBy, setSortBy] = useState<keyof garantiesOutput | "">('id')
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [selectedGaranties, setSelectedGaranties] = useState<string[]>([])

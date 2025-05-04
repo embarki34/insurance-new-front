@@ -148,7 +148,7 @@ export default function Objects() {
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                Dernière mise à jour {new Date().toLocaleDateString("fr-FR")}
+                Dernière mise à jour {new Date().toLocaleDateString("fr-FR")} {pagination?.currentPage}
               </div>
             </CardContent>
           </Card>

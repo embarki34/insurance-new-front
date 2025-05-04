@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, MapPin, CalendarDays, ChevronDown, Landmark, AreaChart, DollarSign, Plus, Check } from "lucide-react"; // Added Check icon
+import { Building2, MapPin, CalendarDays, Landmark, AreaChart, DollarSign, Plus, Check } from "lucide-react"; // Added Check icon
 import { Detail, ObjectOutput, SiteOutput } from '@/lib/output-Types'; // Assuming Detail type is { key: string; value: string; }
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";

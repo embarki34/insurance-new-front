@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { contractInput } from "@/lib/input-Types"
 import { createContract } from "@/data/contracts.service"
 import { getParameters } from "@/data/parameters.service"
-import { CompagnieOutput, InsuranceCampaniseOutput, ObjectOutput, parameter } from "@/lib/output-Types"
+import { CompagnieOutput, garantiesOutput, InsuranceCampaniseOutput, ObjectOutput, parameter } from "@/lib/output-Types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/format"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -23,6 +23,7 @@ import { getObjects } from "@/data/object.service"
 import CreateObjects from "../objects/creatObjects"
 import { getCompagnies } from "@/data/societes.service"
 import { getInsuranceCampanises } from "@/data/insuranceCampanise.service"
+import { getGaranties } from "@/data/garanties.service"
 
 // Status options
 const statusOptions = [
@@ -36,9 +37,7 @@ interface AddContractProps {
 }
 
 // Update the ContractWithParameters interface
-interface ContractWithObjectDetails extends contractInput {
-  insuredList: string[]; // Changed to string[] to store object IDs
-}
+
 
 const AddContract = ({ onAdd }: AddContractProps) => {
   const [open, setOpen] = useState(false)
@@ -48,11 +47,16 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [contractData, setContractData] = useState<contractInput>({
     type_id: "",
+    insuranceCompanyId: "",
     policyNumber: "",
-    insuredAmount: "",
-    primeAmount: "",
-    insuranceCompanyName: "",
-    holderName: "",
+    insuredAmount: 0,
+    primeAmount: 0,
+    holderId: "",
+    insuredList: [{
+      object_id: "",
+      garanties: [],
+    }],
+
     startDate: new Date().toISOString(),
     endDate: new Date().toISOString(),
     status: "",
@@ -67,11 +71,19 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [refetch, setRefetch] = useState(false);
   const [societe, setSociete] = useState<CompagnieOutput[]>([]);
   const [compagnie_dassurance, setCompagnie_dassurance] = useState<InsuranceCampaniseOutput[]>([]);
+  const [garanties, setGaranties] = useState<garantiesOutput[]>([]);
+  const [filteredGaranties, setFilteredGaranties] = useState<garantiesOutput[]>([]);
+
 
   const [selectedSociete, setSelectedSociete] = useState<string>("");
   const [selectedCompagnie_dassurance, setSelectedCompagnie_dassurance] = useState<string>("");
 
-  const steps = ["company", "police", "garanties", "details"]
+  // Add a new state variable to track object-specific guarantees
+  const [objectGuarantees, setObjectGuarantees] = useState<{ 
+    [objectId: string]: string[] 
+  }>({});
+
+  const steps = ["company", "police", "details"]
 
   const getNextStep = () => {
     const currentIndex = steps.indexOf(currentStep)
@@ -84,6 +96,16 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   }
 
   const handleNext = () => {
+    // Validate only current step requirements
+    const errors = validateForm(currentStep)
+
+    if (errors.length > 0) {
+      setShowValidation(true)
+      setValidationErrors(errors)
+      toast.error(`Veuillez remplir les champs obligatoires pour cette étape`)
+      return
+    }
+
     const nextStep = getNextStep()
     if (nextStep) {
       setCurrentStep(nextStep)
@@ -97,24 +119,39 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     }
   }
 
-  const validateForm = () => {
+  const validateForm = (step?: string) => {
+    const currentStepToValidate = step || currentStep
     const errors: string[] = []
 
-    // Company tab validation
-    if (!selectedSociete) errors.push("societe")
-    if (!selectedCompagnie_dassurance) errors.push("compagnie_dassurance")
+    switch (currentStepToValidate) {
+      case "company":
+        if (!selectedSociete) errors.push("societe")
+        if (!selectedCompagnie_dassurance) errors.push("compagnie_dassurance")
+        break
 
-    // Police tab validation
-    if (!contractData.type_id) errors.push("type_id")
-    if (!contractData.policyNumber) errors.push("policyNumber")
-    if (!contractData.insuredAmount) errors.push("insuredAmount")
-    if (!contractData.primeAmount) errors.push("primeAmount")
-    if (!contractData.startDate) errors.push("startDate")
-    if (!contractData.endDate) errors.push("endDate")
-    if (!contractData.status) errors.push("status")
+      case "police":
+        if (!contractData.type_id) errors.push("type_id")
+        if (!contractData.policyNumber) errors.push("policyNumber")
+        if (!contractData.insuredAmount) errors.push("insuredAmount")
+        if (!contractData.primeAmount) errors.push("primeAmount")
+        if (!contractData.startDate) errors.push("startDate")
+        if (!contractData.endDate) errors.push("endDate")
+        if (!contractData.status) errors.push("status")
+        break
 
-    // Details tab validation (if you want to require at least one object)
-    if (selectedObjectIds.length === 0) errors.push("objects")
+      case "details":
+        if (selectedObjectIds.length === 0) errors.push("objects")
+        
+        // Validate that each object has at least one guarantee
+        const objectsWithoutGuarantees = selectedObjectIds.filter(
+          id => !objectGuarantees[id] || objectGuarantees[id].length === 0
+        );
+        
+        if (objectsWithoutGuarantees.length > 0) {
+          errors.push("objectGuarantees");
+        }
+        break
+    }
 
     return errors
   }
@@ -125,21 +162,22 @@ const AddContract = ({ onAdd }: AddContractProps) => {
         const parameters = await getParameters();
         const societe = await getCompagnies();
         const compagnie_dassurance = await getInsuranceCampanises();
+        const garanties = await getGaranties();
 
-        
+
         const insuranceTypes = parameters.filter((type) => type.key === "type_de_police");
-        // const societe = parameters.filter((type) => type.key === "societe");
-        // const compagnie_dassurance = parameters.filter((type) => type.key === "compagnie_dassurance");
+
         setInsuranceTypes(insuranceTypes);
         setSociete(societe);
         setCompagnie_dassurance(compagnie_dassurance);
+        setGaranties(garanties);
       } catch (error) {
         console.error("Error fetching insurance types:", error);
       }
     };
 
 
-    
+
 
     const fetchObjects = async () => {
       try {
@@ -174,9 +212,40 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const handleObjectSelection = (objectId: string, isChecked: boolean) => {
     if (isChecked) {
       setSelectedObjectIds(prev => [...prev, objectId]);
+      // Initialize empty guarantees array for this object
+      setObjectGuarantees(prev => ({
+        ...prev,
+        [objectId]: prev[objectId] || []
+      }));
     } else {
       setSelectedObjectIds(prev => prev.filter(id => id !== objectId));
+      // Remove guarantees for this object if unselected
+      setObjectGuarantees(prev => {
+        const newState = { ...prev };
+        delete newState[objectId];
+        return newState;
+      });
     }
+  };
+
+  // Add function to handle guarantees selection for specific object
+  const handleObjectGuaranteeToggle = (objectId: string, guaranteeId: string) => {
+    setObjectGuarantees(prev => {
+      const currentGuarantees = prev[objectId] || [];
+      
+      // If guarantee already selected, remove it, otherwise add it
+      if (currentGuarantees.includes(guaranteeId)) {
+        return {
+          ...prev,
+          [objectId]: currentGuarantees.filter(id => id !== guaranteeId)
+        };
+      } else {
+        return {
+          ...prev,
+          [objectId]: [...currentGuarantees, guaranteeId]
+        };
+      }
+    });
   };
 
   // Handle object creation completion
@@ -215,35 +284,59 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setShowValidation(true)
-    
-    const errors = validateForm()
-    setValidationErrors(errors)
+  useEffect(() => {
+    if (selectedCompagnie_dassurance) {
+      const filtered = garanties.filter(g => g.insurance_company === selectedCompagnie_dassurance);
+      setFilteredGaranties(filtered);
+    } else {
+      setFilteredGaranties([]);
+    }
+  }, [selectedCompagnie_dassurance, garanties]);
 
-    if (errors.length > 0) {
-      // Find the first tab with errors and switch to it
-      if (errors.some(error => ["societe", "compagnie_dassurance"].includes(error))) {
-        setCurrentStep("company")
-      } else if (errors.some(error => ["type_id", "policyNumber", "insuredAmount", "primeAmount", "startDate", "endDate", "status"].includes(error))) {
-        setCurrentStep("police")
-      } else if (errors.includes("objects")) {
-        setCurrentStep("details")
-      }
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Validate all steps before submission
+    const allErrors = steps.flatMap(step => validateForm(step));
+    
+    if (allErrors.length > 0) {
+      setShowValidation(true);
+      setValidationErrors(allErrors);
       
-      toast.error("Veuillez remplir tous les champs obligatoires")
-      return
+      // Find first error tab
+      const firstErrorStep = steps.find(step => 
+        validateForm(step).length > 0
+      );
+      
+      if (firstErrorStep) {
+        setCurrentStep(firstErrorStep);
+        toast.error("Veuillez corriger toutes les erreurs avant soumission");
+      }
+      return;
     }
 
-    setIsSubmitting(true)
+    // Proceed with submission
+    setIsSubmitting(true);
     try {
-      const contractWithDetails: ContractWithObjectDetails = {
+      // Create the insured list with object-specific guarantees
+      const insuredObjectsList = selectedObjectIds.map(objectId => ({
+        object_id: objectId,
+        garanties: objectGuarantees[objectId] || []
+      }));
+      
+      const finalContractData = {
         ...contractData,
-        insuredList: selectedObjectIds
+        // Convert insuredAmount and primeAmount to numbers
+        insuranceCompanyId: selectedCompagnie_dassurance, // Use selected ID directly
+        holderId: selectedSociete, // Use the selected ID directly
+        insuredAmount: Number(contractData.insuredAmount),
+        primeAmount: Number(contractData.primeAmount),
+        insuredList: insuredObjectsList,
+        startDate: new Date(contractData.startDate).toISOString(),
+        endDate: new Date(contractData.endDate).toISOString()
       };
 
-      await createContract(contractWithDetails as any);
+      await createContract(finalContractData);
       toast.success("Le contrat a été créé avec succès");
       onAdd();
       setOpen(false);
@@ -252,7 +345,27 @@ const AddContract = ({ onAdd }: AddContractProps) => {
       toast.error("Une erreur s'est produite lors de la création du contrat");
     }
     setIsSubmitting(false);
-  }
+  };
+
+  // Update the insurance company selection handler
+  const handleCompagnieChange = (value: string) => {
+    setSelectedCompagnie_dassurance(value);
+    const selectedCompany = compagnie_dassurance.find(c => c.id === value);
+    setContractData(prev => ({
+      ...prev,
+      insuranceCompanyId: selectedCompany?.id || ""
+    }));
+  };
+
+  // Update the societe selection handler to set holderId
+  const handleSocieteChange = (value: string) => {
+    setSelectedSociete(value);
+    // Since we're now using the ID directly, we can set it to holderId
+    setContractData(prev => ({
+      ...prev,
+      holderId: value
+    }));
+  };
 
   return (
     <div className="flex items-center justify-end">
@@ -273,80 +386,73 @@ const AddContract = ({ onAdd }: AddContractProps) => {
               <TabsList className="w-full mb-6">
                 <TabsTrigger value="company" className="flex-1">
                   Informations de la compagnie
-                  {showValidation && validationErrors.some(error => ["societe", "compagnie_dassurance"].includes(error)) && 
+                  {showValidation && validationErrors.some(error => ["societe", "compagnie_dassurance"].includes(error)) &&
                     <span className="ml-2 text-red-500">*</span>
                   }
                 </TabsTrigger>
                 <TabsTrigger value="police" className="flex-1">
                   Détails de la police
-                  {showValidation && validationErrors.some(error => ["type_id", "policyNumber", "insuredAmount", "primeAmount", "startDate", "endDate", "status"].includes(error)) && 
+                  {showValidation && validationErrors.some(error => ["type_id", "policyNumber", "insuredAmount", "primeAmount", "startDate", "endDate", "status"].includes(error)) &&
                     <span className="ml-2 text-red-500">*</span>
                   }
                 </TabsTrigger>
-                <TabsTrigger value="garanties" className="flex-1">Garanties</TabsTrigger>
                 <TabsTrigger value="details" className="flex-1">
-                  Détails des objets
-                  {showValidation && validationErrors.includes("objects") && 
+                  Objets et Garanties
+                  {showValidation && (validationErrors.includes("objects") || validationErrors.includes("objectGuarantees")) &&
                     <span className="ml-2 text-red-500">*</span>
                   }
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="company">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="societe" className="text-sm font-semibold flex items-center gap-1">
-                        <span className="text-red-500">*</span>
-                        Société
-                      </Label>
-                      <Select
-                        value={selectedSociete}
-                        onValueChange={(value) => setSelectedSociete(value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Sélectionnez une société" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {societe.map((societe) => (
-                            <SelectItem key={societe.informations_generales.raison_sociale} value={societe.informations_generales.raison_sociale}>
-                              {societe.informations_generales.raison_sociale}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="compagnie_dassurance" className="text-sm font-semibold flex items-center gap-1">
-                        <span className="text-red-500">*</span>
-                        Compagnie d'assurance
-                      </Label>
-                      <Select
-                        value={selectedCompagnie_dassurance}
-                        onValueChange={(value) => setSelectedCompagnie_dassurance(value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Sélectionnez une compagnie d'assurance" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {compagnie_dassurance.map((compagnie_dassurance) => (
-                            compagnie_dassurance.donnees_specifiques_assurance.produits_assurance.map((value) => (
-                              <SelectItem key={value} value={value}>
-                                {value}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="holderId" className="text-sm font-semibold flex items-center gap-1">
+                          <span className="text-red-500">*</span>
+                          Société
+                        </Label>
+                        <Select
+                          value={selectedSociete}
+                          onValueChange={handleSocieteChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Sélectionnez une société" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {societe.map((societe) => (
+                              <SelectItem key={societe.id} value={societe.id}>
+                                {societe.informations_generales.raison_sociale}
                               </SelectItem>
-                            ))
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="compagnie_dassurance" className="text-sm font-semibold flex items-center gap-1">
+                          <span className="text-red-500">*</span>
+                          Compagnie d'assurance
+                        </Label>
+                        <Select
+                          value={selectedCompagnie_dassurance}
+                          onValueChange={handleCompagnieChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Sélectionnez une compagnie d'assurance" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {compagnie_dassurance.map((compagnie) => (
+                              <SelectItem key={compagnie.id} value={compagnie.id}>
+                                {compagnie.informations_generales.raison_sociale}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
               </TabsContent>
-
-
-
-
 
               <TabsContent value="police">
                 <Card>
@@ -427,9 +533,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                         </div>
                       </div>
 
-                      
 
-                      
+
+
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -523,34 +629,20 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                 </Card>
               </TabsContent>
 
-
-
-
-
-              <TabsContent value="garanties">
-                
-              </TabsContent>
-
-
-             
-
               <TabsContent value="details">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Left side - List of selected objects */}
                       <div className="md:col-span-1 space-y-4">
-                        <h3 className="text-lg font-semibold">Objets sélectionnés</h3>
+                        <h3 className="text-lg font-semibold">Objets assurés et leurs garanties</h3>
 
                         {selectedObjectIds.length > 0 ? (
-                          <div className="h-[480px] overflow-y-auto pr-2 space-y-2">
+                          <div className="h-[480px] overflow-y-auto pr-2 space-y-4">
                             {selectedObjectIds.map((objectId) => {
                               const object = objects.find(obj => obj.id === objectId);
                               return (
-                                <div
-                                  key={objectId}
-                                  className="p-3 border rounded-md bg-background"
-                                >
+                                <div key={objectId} className="p-3 border rounded-md bg-background">
                                   <div className="flex justify-between items-center mb-2">
                                     <Badge className="text-xs">
                                       {object?.objectType || "Objet"}
@@ -565,13 +657,62 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                                     </Button>
                                   </div>
 
-                                  <div className="space-y-2">
+                                  <div className="space-y-2 mb-3">
                                     {object?.details.map((detail, index) => (
                                       <div key={index} className="flex items-start text-sm border-b pb-1 last:border-0">
                                         <span className="font-medium min-w-24">{detail.key}:</span>
                                         <span className="ml-2">{detail.value}</span>
                                       </div>
                                     ))}
+                                  </div>
+                                  
+                                  {/* Guarantees selection for this object */}
+                                  <div className="mt-3 border-t pt-3">
+                                    <h4 className="text-sm font-medium mb-2 flex items-center">
+                                      <span className="text-red-500 mr-1">*</span>
+                                      Garanties pour cet objet:
+                                    </h4>
+                                    
+                                    {filteredGaranties.length > 0 ? (
+                                      <div className="space-y-2">
+                                        {filteredGaranties.map(garantie => {
+                                          const isSelected = objectGuarantees[objectId]?.includes(garantie.id);
+                                          return (
+                                            <div key={garantie.id} className="flex items-center p-1.5 bg-muted/20 rounded hover:bg-muted/30">
+                                              <Checkbox 
+                                                id={`obj-${objectId}-garantie-${garantie.id}`}
+                                                checked={isSelected}
+                                                // onCheckedChange={(checked) => 
+                                               
+                                                onCheckedChange={() => 
+                                                  handleObjectGuaranteeToggle(objectId, garantie.id)
+                                                }
+                                                className="mr-2 h-4 w-4"
+                                              />
+                                              <Label 
+                                                htmlFor={`obj-${objectId}-garantie-${garantie.id}`}
+                                                className="text-sm cursor-pointer flex-1"
+                                              >
+                                                <span className="font-medium">{garantie.label}</span>
+                                                <span className="ml-2 text-xs text-muted-foreground">
+                                                  Taux: {garantie.rate}% | Franchise: {garantie.deductible}
+                                                </span>
+                                              </Label>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground">
+                                        Aucune garantie disponible pour cette compagnie
+                                      </p>
+                                    )}
+                                    
+                                    {objectGuarantees[objectId]?.length === 0 && (
+                                      <p className="text-xs text-destructive mt-2 font-medium">
+                                        Veuillez sélectionner au moins une garantie pour cet objet
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               );
@@ -683,11 +824,6 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                   </CardContent>
                 </Card>
               </TabsContent>
-
-
-
-
-
 
             </Tabs>
 

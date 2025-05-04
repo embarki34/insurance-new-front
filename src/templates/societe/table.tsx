@@ -33,15 +33,9 @@ import { CompagnieOutput } from "@/lib/output-Types"; // Import the generic Comp
 // Assume this service function exists
 // import { deleteCompagnie } from "@/data/compagnie.service";
 import { toast } from "sonner";
+import { deleteCompagnie } from "@/data/societes.service";
 
-// --- Mock delete function if real one isn't ready ---
-const deleteCompagnie = async (id: string) => {
-  console.log("Mock deleteCompagnie:", id);
-  await new Promise(res => setTimeout(res, 500));
-  // Simulate potential errors:
-  // if (id === 'error-id') throw new Error("Simulated delete error");
-};
-// --- End Mock ---
+
 
 interface CompagnieTableProps { // Renamed props interface
   companies: CompagnieOutput[]; // Use CompagnieOutput type

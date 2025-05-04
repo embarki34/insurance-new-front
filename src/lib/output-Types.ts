@@ -1,4 +1,4 @@
-import { InsuranceCampaniseInput } from "./input-Types";
+
 
 export type contract = {
     id: string;
@@ -111,6 +111,8 @@ export interface garantiesOutput {
     validity_duration_months: number;
     validity_date: Date;
     exclusions: string[];
+    createdAt: string;
+    updatedAt: string;
   }
   
 

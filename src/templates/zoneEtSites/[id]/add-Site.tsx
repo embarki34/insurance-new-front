@@ -54,7 +54,8 @@ function AddSite({ zoneId, onAdd }: AddSiteProps) {
         zone: zoneId,
         builtSurface: numericFields.builtSurface.toString() as string,
         unbuiltSurface: numericFields.unbuiltSurface.toString() as string,
-        totalValue: numericFields.totalValue.toString() as string
+        totalValue: numericFields.totalValue.toString() as string,
+        batiments: []
       }
 
        await createSite(zoneId, sitePayload)

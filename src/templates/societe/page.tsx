@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
 import { toast } from "sonner"
-import { CompagnieOutput, InsuranceCampaniseOutput } from "@/lib/output-Types"
+import { CompagnieOutput } from "@/lib/output-Types"
 import { getCompagnies } from "@/data/societes.service"
 import SocietesTable from "./table"
 import CreateAssuranceCompagnie from "./creat-societes"
@@ -79,7 +79,7 @@ export default function SocietePage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Building2 className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold tracking-tight">Compagnies d'Assurance</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Nos sociétés</h2>
               </div>
               <p className="text-sm text-muted-foreground">
                 Gérer les compagnies d'assurance et leurs informations

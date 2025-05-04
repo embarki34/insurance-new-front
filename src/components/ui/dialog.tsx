@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { Space, X } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+// import { Space, X } from "lucide-react"
+// import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root

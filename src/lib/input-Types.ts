@@ -1,16 +1,20 @@
-import Garanties from "@/templates/Garanties/page";
+
 
 export type contractInput = {
   type_id: string;
-  policyNumber: string;
-  insuredAmount: string;
-  primeAmount: string;
-  insuranceCompanyName: string;
-  holderName: string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  policyDocument: File | null;
+  insuranceCompanyId: string; 
+  policyNumber: string; 
+  insuredAmount: number; 
+  primeAmount: number; 
+  holderId: string; 
+  insuredList: {
+    object_id: string; 
+    garanties: string[]; 
+  }[];
+  startDate: string; // e.g., "2025-05-04T09:29:19.361Z"
+  endDate: string; // e.g., "2025-05-04T09:29:19.361Z"
+  status: string; // e.g., "active"
+  policyDocument: File | null; // e.g., null
 }
 
 
