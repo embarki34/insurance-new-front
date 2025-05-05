@@ -77,6 +77,7 @@ export default function Objects() {
           value.value.toString().toLowerCase().includes(searchQuery.toLowerCase())
         )
       )
+      console.log("filtered",filtered)
       setFilteredObjects(filtered)
     } else {
       setFilteredObjects(objects)

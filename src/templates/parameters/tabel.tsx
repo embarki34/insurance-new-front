@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { updateParameter } from "@/data/parameters.service"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function TableComponent({
   parameters = [],
@@ -49,7 +50,7 @@ function TableComponent({
   const [selectedType, setSelectedType] = useState<parameter | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [newValue, setNewValue] = useState({ key: "", label: "" })
+  const [newValue, setNewValue] = useState({ key: "", label: "", valueType: "string" })
   const [isUpdating, setIsUpdating] = useState(false)
 
   const handleSort = (column: keyof parameter) => {
@@ -75,7 +76,7 @@ function TableComponent({
     setSelectedType(type)
     setDetailsOpen(true)
     setIsEditMode(false)
-    setNewValue({ key: "", label: "" })
+    setNewValue({ key: "", label: "", valueType: "string" })
   }
 
   const handleValueDelete = async (valueIndex: number) => {
@@ -111,7 +112,11 @@ function TableComponent({
 
     try {
       setIsUpdating(true)
-      const updatedValues = [...selectedType.values, { ...newValue, linked_params: [] }]
+      const updatedValues = [...selectedType.values, { 
+        ...newValue, 
+        linked_params: [],
+        valueType: newValue.valueType
+      }]
       const updatedParameter = {
         ...selectedType,
         values: updatedValues
@@ -125,7 +130,7 @@ function TableComponent({
 
       setSelectedType(updatedParameter)
       onEdit(selectedType.id)
-      setNewValue({ key: "", label: "" })
+      setNewValue({ key: "", label: "", valueType: "string" })
       toast.success("La valeur a été ajoutée avec succès")
     } catch (error) {
       console.error("Erreur lors de l'ajout de la valeur :", error)
@@ -338,7 +343,7 @@ function TableComponent({
                     {isEditMode && (
                       <div className="mb-6 space-y-4 border rounded-lg p-4">
                         <h4 className="font-medium">Ajouter une nouvelle valeur</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <Label htmlFor="new-key">Identifiant</Label>
                             <Input
@@ -359,6 +364,24 @@ function TableComponent({
                               className="mt-1.5"
                               disabled={isUpdating}
                             />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-valueType">Type de valeur</Label>
+                            <Select
+                              value={newValue.valueType}
+                              onValueChange={(value) => setNewValue(prev => ({ ...prev, valueType: value }))}
+                              disabled={isUpdating}
+                            >
+                              <SelectTrigger id="new-valueType" className="mt-1.5">
+                                <SelectValue placeholder="Sélectionner un type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="string">Texte</SelectItem>
+                                <SelectItem value="number">Nombre</SelectItem>
+                                <SelectItem value="boolean">Booléen</SelectItem>
+                                <SelectItem value="date">Date</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                         <div className="flex justify-end">
@@ -386,6 +409,12 @@ function TableComponent({
                               <span className="font-medium">{values.label}</span>
                               <Badge variant="outline" className="font-mono text-xs">
                                 {values.key}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {values.valueType === "string" ? "Texte" : 
+                                 values.valueType === "number" ? "Nombre" : 
+                                 values.valueType === "boolean" ? "Booléen" : 
+                                 values.valueType === "date" ? "Date" : values.valueType || "Texte"}
                               </Badge>
                               {values.linked_params && values.linked_params.length > 0 && (
                                 <Badge variant="secondary" className="text-xs">

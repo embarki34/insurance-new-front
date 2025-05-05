@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { createObjects } from "@/data/object.service"
 import { Checkbox } from "@/components/ui/checkbox"
+import { parameterInput } from "@/lib/input-Types"
 
 // Value structure from the parameter data
 interface ParamValue {
@@ -33,6 +34,7 @@ interface ParameterWithValues {
 interface ObjectValue {
   paramKey: string;
   paramLabel: string;
+  objectName: string;
   values: {
     valueKey: string;
     valueLabel: string;
@@ -79,6 +81,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
   const [isAddingField, setIsAddingField] = useState(false)
   const [newField, setNewField] = useState<NewFieldInput>({ key: "", label: "" })
   const [isAddingFieldLoading, setIsAddingFieldLoading] = useState(false)
+  const [objectName, setObjectName] = useState("")
 
   // Action states
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -189,16 +192,18 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
         ...currentParam,
         values: [
           ...currentParam.values,
+
           {
             key: newField.key,
             label: newField.label,
+            valueType: "string",
             linked_params: []
           }
         ]
       }
 
       // Update parameter in backend
-      await updateParameter(currentParam.id, updatedParam)
+      await updateParameter(currentParam.id, updatedParam as parameterInput)
 
       // Update local state
       setParameters(prev =>
@@ -250,6 +255,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
     const newObjectValue: ObjectValue = {
       paramKey: selectedParam.key,
       paramLabel: selectedParam.label,
+      objectName: objectName.trim(),
       values: filledValues,
       id: Date.now().toString(),
       selectedFields: [...selectedFields] // Store selected fields with the object
@@ -260,8 +266,9 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
 
     // Only reset the form values but keep the selected fields
     setParameterFormValues({})
+    setObjectName("")
 
-    toast.success(`Nouveau groupe de valeurs ajouté avec succès`)
+    toast.success(`Nouveau objet ajouté avec succès`)
   }
 
   // Remove an object value
@@ -280,6 +287,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
       // Create array of formatted objects
       const formattedObjects = objectValues.map(objectValue => ({
         objectType: objectValue.paramKey,
+        objectName: objectValue.objectName,
         details: objectValue.values.map(value => ({
           key: value.valueKey,
           value: value.customValue
@@ -342,6 +350,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
                     </Badge>
                   </div>
 
+
                   <div className="flex-1 overflow-y-auto pr-2 -mr-2">
                     {objectValues.length > 0 ? (
                       <div className="space-y-3">
@@ -352,9 +361,12 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
                           >
                             <CardContent className="p-4">
                               <div className="flex justify-between items-center mb-3">
-                                <Badge className="text-xs px-2 py-1">
-                                  {objectValue.paramLabel}
-                                </Badge>
+                                <div className="space-y-1">
+                                  <h4 className="font-medium text-sm">{objectValue.objectName}</h4>
+                                  <Badge className="text-xs px-2 py-1">
+                                    {objectValue.paramLabel}
+                                  </Badge>
+                                </div>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -399,6 +411,19 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
             <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
               <Card className="flex-1 border-none shadow-none bg-muted/30 overflow-hidden flex flex-col">
                 <CardContent className="p-4 flex flex-col h-full">
+                  <div className="items-center justify-between mb-4 ">
+                    <h3 className="text-lg font-semibold mb-4">Nom de l'objet</h3>
+                    <div className="gap-2">
+                      <label htmlFor="objectName" className="text-sm font-medium mb-2">Nom de l'objet</label>
+                      <Input
+                        id="objectName"
+                        placeholder="Nom de l'objet"
+                        value={objectName}
+                        onChange={(e) => setObjectName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Valeurs de l'objet</h3>
 
@@ -407,7 +432,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
                         {selectedParameterObject.label}
                       </Badge>
                     )}
-                  
+
                   </div>
 
                   <div className="flex-1 overflow-y-auto pr-2 -mr-2">

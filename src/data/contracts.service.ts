@@ -1,15 +1,15 @@
 import axiosInstance from "@/config/axios";
 import { contractInput } from "@/lib/input-Types";
-import { contract, pagination } from "@/lib/output-Types";
+import {  contractOutput } from "@/lib/output-Types";
 
 
 const endpoint = "/contracts";
 
 
-export const getContracts = async (): Promise<{ contracts: contract[], pagination: pagination }> => {
+export const getContracts = async (): Promise<{ contracts: contractOutput[] }> => {
     const response = await axiosInstance.get(endpoint);
 
-    return { contracts: response.data.contracts, pagination: response.data.pagination };
+    return { contracts: response.data };
 }
 
 
@@ -27,6 +27,12 @@ export const updateContract = async (contract: Partial<contractInput>, id: strin
 
 export const deleteContract = async (id: string) => {
     const response = await axiosInstance.delete(`${endpoint}/${id}`);
+    return response.data;
+}
+
+
+export const getContractById = async (id: string): Promise<contractOutput> => {
+    const response = await axiosInstance.get(`${endpoint}/${id}`);
     return response.data;
 }
 

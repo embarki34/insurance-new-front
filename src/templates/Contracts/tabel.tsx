@@ -25,34 +25,31 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Pen, Trash, AlertCircle,  ArrowUpDown } from 'lucide-react'
+import { Pen, Trash, AlertCircle, ArrowUpDown, Eye } from 'lucide-react'
 import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useNavigate } from "react-router-dom"
-import { contract  } from "@/lib/output-Types"
+import { contractOutput } from "@/lib/output-Types"
 
-
-
-  
 function TableComponent({
   contracts,
   onEdit,
   onDelete,
   isLoading = false,
 }: {
-  contracts: contract[];
+  contracts: contractOutput[];
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   isLoading?: boolean;
 }) {
-  const [sortBy, setSortBy] = useState<keyof contract>("id")
+  const [sortBy, setSortBy] = useState<keyof contractOutput>("id")
   const [sortOrder, setSortOrder] = useState("asc")
-  const [selectedCase, setSelectedCase] = useState<contract | null>(null)
+  const [selectedCase, setSelectedCase] = useState<contractOutput | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const router = useNavigate()
-  const handleSort = (column: keyof contract) => {
+  const handleSort = (column: keyof contractOutput) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
     } else {
@@ -71,7 +68,7 @@ function TableComponent({
     }
   })
 
-  const openDetails = (caseItem: contract) => {
+  const openDetails = (caseItem: contractOutput) => {
     router(`/contracts/${caseItem.id}`, { state: caseItem })
     setSelectedCase(caseItem)
   }
@@ -90,10 +87,19 @@ function TableComponent({
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="text-lg font-medium">لا توجد بيانات</h3>
         <p className="text-sm text-muted-foreground mt-2 text-center max-w-md">
-          لا توجد قضايا متاحة حالياً. يمكنك إضافة قضية جديدة باستخدام زر "إضافة قضية جديدة".
+        Aucun cas n'est actuellement disponible. Vous pouvez ajouter un nouveau cas en utilisant le bouton "Ajouter un nouveau cas"..
         </p>
+        
       </div>
     )
+  }
+
+  const handelTimeLeft =(startDate:string,endDate:string)=>{
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const diffTime = Math.abs(end.getTime() - start.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays
   }
 
   return (
@@ -108,25 +114,29 @@ function TableComponent({
                 onClick={() => handleSort("id")}
               >
                 <div className="flex items-center">
-                  المعرف
+                  ID
                   <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "id" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("name")}
+                onClick={() => handleSort("type_id")}
               >
                 <div className="flex items-center">
-                  العنوان
-                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "name" ? "opacity-100" : "opacity-50"}`} />
+                  Type
+                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "type_id" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
-              <TableHead>التفاصيل</TableHead>
-              <TableHead className="text-left">الإجراءات</TableHead>
+              <TableHead>Insured Amount (DZD)</TableHead>
+              <TableHead>Prime Amount (DZD)</TableHead>
+              <TableHead>Time Left</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>End Date</TableHead>
+              <TableHead className="text-left">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.map((contractItem: contract, index: number) => (
+            {sortedData.map((contractItem: contractOutput, index: number) => (
               <TableRow
                 key={contractItem.id}
                 className="hover:bg-muted/50 transition-colors"
@@ -137,27 +147,12 @@ function TableComponent({
                     {contractItem.id}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-medium">{contractItem.name}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1 max-w-xs">
-                    {Array.isArray(contractItem.description) ? (
-                      contractItem.description.map((description: string, i: number) => (
-                        <Badge key={i} variant="secondary" className="text-xs">
-                          {description}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">
-                        {contractItem.description}
-                      </Badge>
-                    )}
-                    {Array.isArray(contractItem.description) && contractItem.description.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{contractItem.description.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
+                <TableCell className="font-medium">{contractItem.type_id}</TableCell>
+                <TableCell className="font-medium">{contractItem.insuredAmount} DZD</TableCell>
+                <TableCell className="font-medium">{contractItem.primeAmount} DZD</TableCell>
+                <TableCell className="font-medium"><Badge variant="outline" className="font-mono">{handelTimeLeft(contractItem.startDate,contractItem.endDate)} days</Badge></TableCell>
+                <TableCell className="font-medium">{new Date(contractItem.startDate).toLocaleDateString("fr-FR")}</TableCell>
+                <TableCell className="font-medium">{new Date(contractItem.endDate).toLocaleDateString("fr-FR")}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2 space-x-reverse justify-end">
                     <TooltipProvider>
@@ -167,9 +162,9 @@ function TableComponent({
                             variant="ghost"
                             size="icon"
                             onClick={() => openDetails(contractItem)}
-                            className="w-24 h-8 p-0 bg-primary text-primary-foreground hover:bg-primary/90 text-sm hover:text-primary-foreground/90 text-center"
+                            className="w-8 h-8 p-0 "
                           >
-                             التفاصيل
+                             <Eye className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -252,8 +247,8 @@ function TableComponent({
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">العنوان</p>
-                        <p className="font-medium mt-1">{selectedCase.name}</p>
+                        <p className="text-sm font-medium text-muted-foreground">نوع العقد</p>
+                        <p className="font-medium mt-1">{selectedCase.type_id}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -264,21 +259,21 @@ function TableComponent({
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">التفاصيل المتاحة</CardTitle>
                     <CardDescription>
-                      {selectedCase.description.length} تفاصيل متاحة لهذه القضية
+                      {selectedCase.insuredList.length} تفاصيل متاحة لهذه القضية
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Accordion type="multiple" className="w-full">
-                      {Array.isArray(selectedCase.description) && selectedCase.description.map((detail, index) => (
+                      {Array.isArray(selectedCase.insuredList) && selectedCase.insuredList.map((insured, index) => (
                         <AccordionItem key={index} value={`detail-${index}`}>
                           <AccordionTrigger className="hover:no-underline py-3">
                             <div className="flex items-center gap-2 text-left">
-                              <span className="font-medium">{detail}</span>
+                              <span className="font-medium">{insured.object_id}</span>
                             </div>
                           </AccordionTrigger>
                           <AccordionContent>
                             <p className="text-sm text-muted-foreground py-2">
-                              تفاصيل إضافية حول {detail}.
+                              تفاصيل إضافية حول {insured.object_id}.
                             </p>
                           </AccordionContent>
                         </AccordionItem>

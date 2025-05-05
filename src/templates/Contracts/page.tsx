@@ -2,7 +2,7 @@
 import TableComponent from "./tabel"
 import { useState, useEffect, Suspense } from "react"
 import { deleteContract, getContracts } from "@/data/contracts.service"
-import { contract } from "@/lib/output-Types"
+import { contractOutput } from "@/lib/output-Types"
 import { toast } from "sonner"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,18 +18,18 @@ import AddContract from "./creat-new-contract"
 // import CreateObjects from "../objects/creatObjects"
 
 export default function Contracts() {
-  const [contracts, setContracts] = useState<contract[]>([])
+  const [contracts, setContracts] = useState<contractOutput[]>([])
   const [refresh, setRefresh] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [pagination, setPagination] = useState<paginationType | null>(null)
+  // const [pagination, setPagination] = useState<paginationType | null>(null)
 
   useEffect(() => {
     const fetchContracts = async () => {
       setIsLoading(true)
-      const { contracts, pagination } = await getContracts()
+      const { contracts } = await getContracts()
       setContracts(contracts)
-      setPagination(pagination)
+      // setPagination(pagination)
       setIsLoading(false)
     }
     fetchContracts()
@@ -38,7 +38,9 @@ export default function Contracts() {
   const handleDeleting = async (id: string) => {
     try {
       await deleteContract(id)
+      setRefresh(!refresh)
       toast.success("Contrat supprimé avec succès")
+
     } catch (error) {
       toast.error("Échec de la suppression du contrat")
     }
@@ -55,6 +57,7 @@ export default function Contracts() {
     setSearchQuery(query)
   }
 
+
   if (!isLoading && contracts.length === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -68,8 +71,9 @@ export default function Contracts() {
               Vous n'avez pas encore créé de contrat. Commencez par en ajouter un nouveau.
             </p>
           </div>
-          <AddContract onAdd={handleAdding}/>
-           
+          <div className="flex justify-center">
+            <AddContract onAdd={handleAdding} />
+          </div>
         </div>
       </div>
     )
@@ -222,7 +226,7 @@ export default function Contracts() {
                     onDelete={handleDeleting}
                     isLoading={isLoading}
                   />
-                  {pagination && <Pagination pagination={pagination} />}
+                  {/* {pagination && <Pagination pagination={pagination} />} */}
                 </div>
               )}
             </Suspense>

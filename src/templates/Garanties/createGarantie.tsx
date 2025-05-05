@@ -1,27 +1,35 @@
+"use client"
+
+import type React from "react"
+
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Loader2, Check, CalendarIcon, X } from "lucide-react"
+import "react-datepicker/dist/react-datepicker.css";
+import { Plus, Loader2, Check,  X } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
-import { garantiesInput } from "@/lib/input-Types"
-import { garantiesOutput, InsuranceCampaniseOutput } from "@/lib/output-Types"
+import type { garantiesInput } from "@/lib/input-Types"
+import type { garantiesOutput, InsuranceCampaniseOutput } from "@/lib/output-Types"
 import { createGarantie, updateGarantie } from "@/data/garanties.service"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { Calendar } from "@/components/ui/calendar"
-import { fr } from "date-fns/locale"
+
+// import { fr } from "date-fns/locale"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 // import { getCompagnies } from "@/data/societes.service"
 import { getInsuranceCampanises } from "@/data/insuranceCampanise.service"
+import DatePicker from "react-datepicker"
+
 
 interface CreateGarantieProps {
   garantie?: garantiesOutput
   onSuccess: () => void
 }
+
+
+
 
 const guarantee_type = [
   { value: "incendie", label: "Incendie" },
@@ -44,24 +52,23 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
     rate: garantie?.rate || 0,
     insurance_company: garantie?.insurance_company || "",
     validity_duration_months: garantie?.validity_duration_months || 12,
-    validity_date: garantie?.validity_date || new Date(),
+    validity_date: garantie?.validity_date ? new Date(garantie.validity_date) : new Date(),
     exclusions: garantie?.exclusions || [],
   })
   const [newExclusion, setNewExclusion] = useState("")
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setGarantieData((prev) => ({ ...prev, [name]: value }))
+    setGarantieData((prev) => ({ ...prev, [name]: value.trim() }))
   }
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setGarantieData((prev) => ({ ...prev, [name]: parseFloat(value) || 0 }))
+    setGarantieData((prev) => ({ ...prev, [name]: Number.parseFloat(value) || 0 }))
   }
 
   const handleDateChange = (date: Date | undefined) => {
+    console.log("Date selected:", date)
     if (date) {
       setGarantieData((prev) => ({ ...prev, validity_date: date }))
     }
@@ -101,9 +108,7 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
     } catch (error) {
       console.error("Error submitting garantie:", error)
       toast.error(
-        garantie
-          ? "Erreur lors de la mise à jour de la garantie"
-          : "Erreur lors de la création de la garantie"
+        garantie ? "Erreur lors de la mise à jour de la garantie" : "Erreur lors de la création de la garantie",
       )
     } finally {
       setIsSubmitting(false)
@@ -111,7 +116,6 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
   }
 
   useEffect(() => {
-
     const fetchCompagnies = async () => {
       const compagnies = await getInsuranceCampanises()
       setInsuranceCampanises(compagnies)
@@ -130,9 +134,7 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>
-            {garantie ? "Modifier la garantie" : "Ajouter une garantie"}
-          </DialogTitle>
+          <DialogTitle>{garantie ? "Modifier la garantie" : "Ajouter une garantie"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -141,35 +143,19 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="code">Code</Label>
-                  <Input
-                    id="code"
-                    name="code"
-                    value={garantieData.code}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Input id="code" name="code" value={garantieData.code} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="label">Label</Label>
-                  <Input
-                    id="label"
-                    name="label"
-                    value={garantieData.label}
-                    onChange={handleChange}
-                    required
-                  />
+                  <Input id="label" name="label" value={garantieData.label} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-2 ">
                   <Label htmlFor="garantee_type">Type de garantie</Label>
                   <Select
                     value={garantieData.guarantee_type}
-                    onValueChange={(value) =>
-                      setGarantieData((prev) => ({ ...prev, guarantee_type: value }))
-                    }
-
-                
+                    onValueChange={(value) => setGarantieData((prev) => ({ ...prev, guarantee_type: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez un type" />
@@ -213,9 +199,7 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
                   <Label htmlFor="insurance_company">Compagnie d'assurance</Label>
                   <Select
                     value={garantieData.insurance_company}
-                    onValueChange={(value) =>
-                      setGarantieData((prev) => ({ ...prev, insurance_company: value }))
-                    }
+                    onValueChange={(value) => setGarantieData((prev) => ({ ...prev, insurance_company: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez une compagnie" />
@@ -231,9 +215,7 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="validity_duration_months">
-                    Durée de validité (mois)
-                  </Label>
+                  <Label htmlFor="validity_duration_months">Durée de validité (mois)</Label>
                   <Input
                     id="validity_duration_months"
                     name="validity_duration_months"
@@ -244,37 +226,61 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
                   />
                 </div>
 
-                <div className="space-y-2">
+
+                {/* <div className="space-y-2">
+
                   <Label>Date de validité</Label>
                   <Popover>
                     <PopoverTrigger asChild>
+
                       <Button
-                        variant="outline"
+                        variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-[240px] pl-3 text-left font-normal",
                           !garantieData.validity_date && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
                         {garantieData.validity_date ? (
-                          garantieData.validity_date.toLocaleDateString()
+                          formatDate(garantieData.validity_date)
                         ) : (
-                          <span>Choisir une date</span>
+                          <span>Pick a date</span>
                         )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
+
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={garantieData.validity_date}
                         onSelect={handleDateChange}
                         initialFocus
-                        locale={fr}
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
-              </div>
+
+              </div> */}
+                <div className="space-y-2">
+                  <Label htmlFor="validity_date">Date de validité</Label>
+                  <DatePicker
+                    id="validity_date"
+                    selected={garantieData.validity_date}
+                    onChange={(date: Date | null) => handleDateChange(date as Date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="flex h-10 max-w-7xl rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    // dateFormatCalendar="MM/yyy"
+                    placeholderText="Choisir une date"
+                    // showYearDropdown 
+                    // yearDropdownItemNumber={5} 
+                     
+                  />
+                </div>
+                </div>
+
+
+
+
 
               <div className="mt-4 space-y-2">
                 <Label htmlFor="description">Description</Label>
@@ -296,27 +302,15 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
                     onChange={(e) => setNewExclusion(e.target.value)}
                     placeholder="Ajouter une exclusion"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAddExclusion}
-                  >
+                  <Button type="button" variant="outline" onClick={handleAddExclusion}>
                     Ajouter
                   </Button>
                 </div>
                 <div className="space-y-2">
                   {garantieData.exclusions.map((exclusion, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between bg-muted p-2 rounded-md"
-                    >
+                    <div key={index} className="flex items-center justify-between bg-muted p-2 rounded-md">
                       <span>{exclusion}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveExclusion(index)}
-                      >
+                      <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveExclusion(index)}>
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
@@ -327,18 +321,10 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
           </Card>
 
           <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
-            <Button
-              type="submit"
-              className="bg-primary hover:bg-primary/90"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -358,4 +344,4 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
   )
 }
 
-export default CreateGarantie 
+export default CreateGarantie

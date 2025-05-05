@@ -10,12 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Loader2, Check, Building, MapPin, CreditCard } from "lucide-react"; // Removed Shield
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
-
+import { createCompagnie, updateCompagnie } from "@/data/societes.service";
 // --- Assume API functions exist ---
 // import { createCompagnie, updateCompagnie } from "@/data/compagnie.service";
 // --- Mock functions if the real ones aren't ready ---
-const createCompagnie = async (data: any) => { console.log("Mock createCompagnie:", data); await new Promise(res => setTimeout(res, 500)); return { id: 'new-comp-123', ...data }; };
-const updateCompagnie = async (data: any, id: string) => { console.log("Mock updateCompagnie:", id, data); await new Promise(res => setTimeout(res, 500)); return { ...data, id }; };
+// const createCompagnie = async (data: any) => { console.log("Mock createCompagnie:", data); await new Promise(res => setTimeout(res, 500)); return { id: 'new-comp-123', ...data }; };
+const createSociete = async (data: any) => await createCompagnie(data)
+const updateSociete = async (data: any, id: string) => await updateCompagnie(id, data)
 // --- End Mock ---
 
 // --- Define Helper Types ---
@@ -248,10 +249,10 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
 
         try {
             if (company?.id) { // If editing (company prop has id)
-                await updateCompagnie(dataToSubmit, company.id); // Pass ID separately
+                await updateSociete(dataToSubmit, company.id); // Pass ID separately
                 toast.success("Compagnie mise à jour avec succès");
             } else { // If creating
-                await createCompagnie(dataToSubmit);
+                await createSociete(dataToSubmit);
                 toast.success("Compagnie créée avec succès");
             }
             onSuccess(); // Callback to refresh list or perform other actions
@@ -358,7 +359,7 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
                                     </Button>
                                 </div>
                             </TabsContent>
-                             {/* No Insurance Tab */}
+                            
 
                         </Tabs>
                     </form>

@@ -132,3 +132,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+#validity_date {
+  width: 150%;
+
+}
+
+#startDate {
+  width: 370%;
+  
+}
+
+#endDate {
+  width: 370%;
+ 
+}
+.react-datepicker__day-names {
+  background-color: white;
+}
+.react-datepicker__current-month {
+  background-color: white;
+  font-size: 12px !important;
+}
+.react-datepicker__day {
+  background-color: rgb(245, 245, 245);
+  border-radius: 4px;
+  font-size: 12px !important;
+}
+
+.react-datepicker__header  {
+  background-color: white !important;
+  font-size: 12px !important;
+}
+.react-datepicker__day--selected {
+  background-color: #000000 !important;
+}
+.react-datepicker__day--keyboard-selected {
+  background-color: #b1b0b0 !important;
+}
+.react-datepicker-popper {
+  background-color: white !important;
+  
+}
+
+

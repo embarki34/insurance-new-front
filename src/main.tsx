@@ -6,9 +6,9 @@ import App from "@/App";
 // import i18n from "@/config/i18n";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import {
-  RecoilRoot,
-} from 'recoil';
+// import {
+//   RecoilRoot,
+// } from 'recoil';
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -23,9 +23,9 @@ root.render(
         <AppSidebar side="left" variant="floating" />
         <SidebarInset className="flex-1 min-w-0">
           <SidebarTrigger />
-          <RecoilRoot>
+          {/* <RecoilRoot> */}
             <App />
-          </RecoilRoot>
+          {/* </RecoilRoot> */}
         </SidebarInset>
         {/* </div> */}
       </SidebarProvider>

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Loader2, Check, CalendarIcon, Trash } from "lucide-react"
+import { Plus, Loader2, Check,  Trash } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { contractInput } from "@/lib/input-Types"
@@ -11,11 +11,8 @@ import { createContract } from "@/data/contracts.service"
 import { getParameters } from "@/data/parameters.service"
 import { CompagnieOutput, garantiesOutput, InsuranceCampaniseOutput, ObjectOutput, parameter } from "@/lib/output-Types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { formatDate } from "@/lib/format"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { Calendar } from "@/components/ui/calendar";
-import { fr } from "date-fns/locale"
+
+// import { fr } from "date-fns/locale"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -24,6 +21,7 @@ import CreateObjects from "../objects/creatObjects"
 import { getCompagnies } from "@/data/societes.service"
 import { getInsuranceCampanises } from "@/data/insuranceCampanise.service"
 import { getGaranties } from "@/data/garanties.service"
+import DatePicker from "react-datepicker"
 
 // Status options
 const statusOptions = [
@@ -51,7 +49,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     policyNumber: "",
     insuredAmount: 0,
     primeAmount: 0,
-    holderId: "",
+    societeId: "",
     insuredList: [{
       object_id: "",
       garanties: [],
@@ -79,8 +77,8 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [selectedCompagnie_dassurance, setSelectedCompagnie_dassurance] = useState<string>("");
 
   // Add a new state variable to track object-specific guarantees
-  const [objectGuarantees, setObjectGuarantees] = useState<{ 
-    [objectId: string]: string[] 
+  const [objectGuarantees, setObjectGuarantees] = useState<{
+    [objectId: string]: string[]
   }>({});
 
   const steps = ["company", "police", "details"]
@@ -141,12 +139,12 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
       case "details":
         if (selectedObjectIds.length === 0) errors.push("objects")
-        
+
         // Validate that each object has at least one guarantee
         const objectsWithoutGuarantees = selectedObjectIds.filter(
           id => !objectGuarantees[id] || objectGuarantees[id].length === 0
         );
-        
+
         if (objectsWithoutGuarantees.length > 0) {
           errors.push("objectGuarantees");
         }
@@ -232,7 +230,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const handleObjectGuaranteeToggle = (objectId: string, guaranteeId: string) => {
     setObjectGuarantees(prev => {
       const currentGuarantees = prev[objectId] || [];
-      
+
       // If guarantee already selected, remove it, otherwise add it
       if (currentGuarantees.includes(guaranteeId)) {
         return {
@@ -295,19 +293,19 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // Validate all steps before submission
     const allErrors = steps.flatMap(step => validateForm(step));
-    
+
     if (allErrors.length > 0) {
       setShowValidation(true);
       setValidationErrors(allErrors);
-      
+
       // Find first error tab
-      const firstErrorStep = steps.find(step => 
+      const firstErrorStep = steps.find(step =>
         validateForm(step).length > 0
       );
-      
+
       if (firstErrorStep) {
         setCurrentStep(firstErrorStep);
         toast.error("Veuillez corriger toutes les erreurs avant soumission");
@@ -323,12 +321,12 @@ const AddContract = ({ onAdd }: AddContractProps) => {
         object_id: objectId,
         garanties: objectGuarantees[objectId] || []
       }));
-      
+
       const finalContractData = {
         ...contractData,
         // Convert insuredAmount and primeAmount to numbers
         insuranceCompanyId: selectedCompagnie_dassurance, // Use selected ID directly
-        holderId: selectedSociete, // Use the selected ID directly
+        societeId: selectedSociete, // Use the selected ID directly
         insuredAmount: Number(contractData.insuredAmount),
         primeAmount: Number(contractData.primeAmount),
         insuredList: insuredObjectsList,
@@ -461,12 +459,13 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                       <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="type_id" className="text-sm font-semibold flex items-center gap-1">
-                            <span className="text-red-500">*</span>
+                            <span className="text-red-500 ">*</span>
                             Type de police
                           </Label>
                           <Select
                             value={contractData.type_id}
                             onValueChange={(value) => handleSelectChange("type_id", value)}
+                           
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Sélectionnez le type de police" />
@@ -539,63 +538,43 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-sm font-semibold flex items-center gap-1">
+                          <Label htmlFor="startDate" className="text-sm font-semibold flex items-center gap-1">
                             <span className="text-red-500">*</span>
-                            Date de début du contrat
+                            Date de début
                           </Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left",
-                                  !contractData.startDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {contractData.startDate ? formatDate(contractData.startDate) : "Choisissez une date"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={contractData.startDate ? new Date(contractData.startDate) : undefined}
-                                onSelect={(date) => handleDateChange(date as Date, 'startDate')}
-                                initialFocus
-                                locale={fr}
-                              />
-                            </PopoverContent>
-                          </Popover>
+                          <DatePicker
+                            id="startDate"
+                            // showTimeSelect={true}
+                            selected={contractData.startDate ? new Date(contractData.startDate) : undefined}
+                            // The onChange for react-datepicker provides Date | null
+                            onChange={(date: Date | null) => handleDateChange(date as Date, 'startDate')}
+                            dateFormat="dd/MM/yyyy" 
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholderText="Choisir une date"
+                            wrapperClassName="datePicker"
+                            // showYearDropdown 
+                            // yearDropdownItemNumber={5} 
+                          />
+                          {/* Optional: Add CalendarIcon next to it if desired, maybe using flex */}
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-sm font-semibold flex items-center gap-1">
+                          <Label htmlFor="endDate" className="text-sm font-semibold flex items-center gap-1">
                             <span className="text-red-500">*</span>
-                            Date de fin du contrat
+                            Date de fin
                           </Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left",
-                                  !contractData.endDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {contractData.endDate ? formatDate(contractData.endDate) : "Choisissez une date"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={contractData.endDate ? new Date(contractData.endDate) : undefined}
-                                onSelect={(date) => handleDateChange(date as Date, 'endDate')}
-                                initialFocus
-                                locale={fr}
-                              />
-                            </PopoverContent>
-                          </Popover>
+                          <DatePicker
+                            id="endDate"
+                            selected={contractData.endDate ? new Date(contractData.endDate) : undefined}
+                            onChange={(date: Date | null) => handleDateChange(date as Date, 'endDate')}
+                            dateFormat="dd/MM/yyyy" // Customize the display format
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholderText="Choisir une date"
+                            // showYearDropdown 
+                            // yearDropdownItemNumber={5} 
+                          />
+                          {/* Optional: Add CalendarIcon next to it if desired, maybe using flex */}
+                         
                         </div>
                       </div>
 
@@ -665,31 +644,31 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                                       </div>
                                     ))}
                                   </div>
-                                  
+
                                   {/* Guarantees selection for this object */}
                                   <div className="mt-3 border-t pt-3">
                                     <h4 className="text-sm font-medium mb-2 flex items-center">
                                       <span className="text-red-500 mr-1">*</span>
                                       Garanties pour cet objet:
                                     </h4>
-                                    
+
                                     {filteredGaranties.length > 0 ? (
                                       <div className="space-y-2">
                                         {filteredGaranties.map(garantie => {
                                           const isSelected = objectGuarantees[objectId]?.includes(garantie.id);
                                           return (
                                             <div key={garantie.id} className="flex items-center p-1.5 bg-muted/20 rounded hover:bg-muted/30">
-                                              <Checkbox 
+                                              <Checkbox
                                                 id={`obj-${objectId}-garantie-${garantie.id}`}
                                                 checked={isSelected}
                                                 // onCheckedChange={(checked) => 
-                                               
-                                                onCheckedChange={() => 
+
+                                                onCheckedChange={() =>
                                                   handleObjectGuaranteeToggle(objectId, garantie.id)
                                                 }
                                                 className="mr-2 h-4 w-4"
                                               />
-                                              <Label 
+                                              <Label
                                                 htmlFor={`obj-${objectId}-garantie-${garantie.id}`}
                                                 className="text-sm cursor-pointer flex-1"
                                               >
@@ -707,7 +686,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                                         Aucune garantie disponible pour cette compagnie
                                       </p>
                                     )}
-                                    
+
                                     {objectGuarantees[objectId]?.length === 0 && (
                                       <p className="text-xs text-destructive mt-2 font-medium">
                                         Veuillez sélectionner au moins une garantie pour cet objet

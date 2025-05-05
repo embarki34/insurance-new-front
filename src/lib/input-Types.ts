@@ -6,7 +6,7 @@ export type contractInput = {
   policyNumber: string; 
   insuredAmount: number; 
   primeAmount: number; 
-  holderId: string; 
+  societeId: string; 
   insuredList: {
     object_id: string; 
     garanties: string[]; 
@@ -24,6 +24,7 @@ export type parameterInput = {
   values: {
     key: string;
     label: string;
+    valueType: string | boolean | number | Date;
     linked_params: {
       param_key: string;
       allowed_values: string[];
@@ -37,6 +38,7 @@ export type parameterInput = {
 
 export interface objectInput {
   objectType: string
+  objectName: string
   details: Detail[]
   updatedBy: string
 }
@@ -72,8 +74,8 @@ export interface garantiesInput {
   guarantee_type: string;
   rate: number;
   insurance_company: string;
+  validity_date: Date ;
   validity_duration_months: number;
-  validity_date: Date;
   exclusions: string[];
 }
 

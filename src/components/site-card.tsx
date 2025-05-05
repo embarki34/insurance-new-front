@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { getObjects } from "@/data/object.service";
 import { addBatiment } from "@/data/sites.service";
 import { toast   } from "sonner";
+import CreateObjects from "@/templates/objects/creatObjects";
 
 // --- Helper Functions (Keep your existing ones) ---
 const formatDate = (dateString: string | null | undefined): string => {
@@ -54,7 +55,7 @@ const BatimentDetails = ({ batiment }: BatimentDetailsProps) => {
   const type = batiment.objectType || 'Inconnu';
 
   // Extract specific details - adapt keys as needed based on your actual data
-  const findDetail = (keys: string[]) => details.find(d => keys.includes(d.key))?.value || 'N/A';
+  const findDetail = (keys: string[]) => details.find(d => keys.includes(d.key))?.value || 'N/A'; //to be handeld later 
   const filterDetails = (prefixes: string[], excludeKeys: string[] = []) => details.filter(d =>
       prefixes.some(p => d.key.startsWith(p)) && !excludeKeys.some(ex => d.key.endsWith(ex))
   );
@@ -283,6 +284,7 @@ function SiteCard({ site, onEdit }: SiteCardProps) {
                        </div>
                      ))}
                    </div>
+
                    <DialogFooter>
                      <div className="flex justify-between items-center w-full">
                        <span className="text-sm text-slate-500">
@@ -294,6 +296,8 @@ function SiteCard({ site, onEdit }: SiteCardProps) {
                        >
                          {isLoading ? "Adding..." : "Add Selected Batiments"}
                        </Button>
+                   <CreateObjects/>
+
                      </div>
                    </DialogFooter>
                  </DialogContent>

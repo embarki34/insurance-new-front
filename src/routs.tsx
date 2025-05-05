@@ -11,6 +11,7 @@ import ZoneDetails from './templates/zoneEtSites/[id]/page';
 import GarantiesPage from "./templates/Garanties/page"
 import AssuranceCompagniePage from './templates/assurance-compagnie/page';
 import SocietePage from './templates/societe/page';
+import ContractDetails from './templates/Contracts/[id]/page';
 
 
 
@@ -54,6 +55,7 @@ const AppRoutes: React.FC = () => {
       {/* pages */}
       <Route path="/" element={<Navigate to="/contracts" replace />} />
       <Route path="/contracts" element={<Contracts />} />
+      <Route path='/contracts/:id' element={<ContractDetails />} />
       <Route path="/objects" element={<Objects />} />
       <Route path="/zone-et-sites" element={<ZoneEtSites />} />
       <Route path="/zone-et-sites/zone/info/:id" element={<ZoneDetails />} />

@@ -13,12 +13,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-// import { parameter } from "@/lib/output-Types"
+import { parameter } from "@/lib/output-Types"
 
 // Add these type definitions at the top after imports
 interface ParameterValue {
   key: string;
   label: string;
+  valueType: string;
   linked_params: {
     param_key: string;
     allowed_values: string[];
@@ -37,6 +38,7 @@ interface ParameterData {
 interface NewValue {
   key: string;
   label: string;
+  valueType: string;
   hasDependencies: boolean;
   linked_params: {
     param_key: string;
@@ -74,6 +76,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
   const [newValue, setNewValue] = useState<NewValue>({
     key: "",
     label: "",
+    valueType: "string",
     hasDependencies: false,
     linked_params: [],
   })
@@ -164,13 +167,13 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     }
   }
 
-  // const toggleDependencies = (checked: boolean) => {
-  //   setNewValue((prev) => ({
-  //     ...prev,
-  //     hasDependencies: checked,
-  //     linked_params: checked ? prev.linked_params : [],
-  //   }))
-  // }
+  const toggleDependencies = (checked: boolean) => {
+    setNewValue((prev) => ({
+      ...prev,
+      hasDependencies: checked,
+      linked_params: checked ? prev.linked_params : [],
+    }))
+  }
 
   const selectParameter = (paramKey: string) => {
     setNewLinkedParam((prev) => ({
@@ -236,6 +239,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     const valueToAdd: ParameterValue = {
       key: newValue.key,
       label: newValue.label,
+      valueType: newValue.valueType,
       linked_params: newValue.hasDependencies && newValue.linked_params.length > 0 
         ? [...newValue.linked_params]
         : [],
@@ -251,6 +255,7 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
     setNewValue({
       key: "",
       label: "",
+      valueType: "string",
       hasDependencies: false,
       linked_params: [],
     })
@@ -419,6 +424,12 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                               <Badge variant="outline" className="text-xs">
                                 {value.key}
                               </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {value.valueType === "string" ? "Texte" : 
+                                 value.valueType === "number" ? "Nombre" : 
+                                 value.valueType === "boolean" ? "Booléen" : 
+                                 value.valueType === "date" ? "Date" : value.valueType}
+                              </Badge>
                             </div>
                             {value.linked_params && value.linked_params.length > 0 && (
                               <div className="text-xs text-muted-foreground flex flex-wrap gap-1">
@@ -480,6 +491,24 @@ const AddParameter = ({ onAdd }: { onAdd: (response: any) => void }) => {
                           </Alert>
                         )}
                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="valueType">Type de valeur</Label>
+                      <Select 
+                        value={newValue.valueType} 
+                        onValueChange={(value) => setNewValue(prev => ({ ...prev, valueType: value }))}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Choisir un type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="string">Texte</SelectItem>
+                          <SelectItem value="number">Nombre</SelectItem>
+                          <SelectItem value="boolean">Booléen</SelectItem>
+                          <SelectItem value="date">Date</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Dependencies Toggle */}
