@@ -20,22 +20,22 @@ stages:
           - checkout: self
          
           - script: |
-              if docker image inspect litigation-backoffice:latest >/dev/null 2>&1; then
+              if docker image inspect assurance-backoffice:latest >/dev/null 2>&1; then
                 echo "Existing image found, creating backup..."
-                docker tag litigation-backoffice:latest litigation-backoffice:backup
+                docker tag assurance-backoffice:latest assurance-backoffice:backup
               else
                 echo "No existing image found, skipping backup..."
               fi
              
-              echo "Removing untagged litigation-backoffice images..."
-              docker images litigation-backoffice --filter "dangling=true" -q | xargs -r docker rmi
+              echo "Removing untagged assurance-backoffice images..."
+              docker images assurance-backoffice --filter "dangling=true" -q | xargs -r docker rmi
             displayName: 'Backup Existing Docker Image and Clean Untagged Images'
  
           - task: Docker@2
             inputs:
               command: 'build'
               dockerfile: '**/Dockerfile'
-              repository: 'litigation-backoffice'
+              repository: 'assurance-backoffice'
               tags: |
                 latest
             displayName: 'Build Docker Image'
@@ -55,13 +55,13 @@ stages:
               steps:
                 - script: |
                     echo "Checking for existing container..."
-                    if docker ps -a | grep -q litigation-backoffice; then
+                    if docker ps -a | grep -q assurance-backoffice; then
                       echo "Removing existing container..."
-                      docker rm -f litigation-backoffice
+                      docker rm -f assurance-backoffice
                     fi
                    
                     echo "Deploying Docker container..."
-                    docker run -d --name litigation-backoffice -p 4174:4174 litigation-backoffice:latest
+                    docker run -d --name assurance-backoffice -p 4174:4174 assurance-backoffice:latest
                   displayName: "Run Docker Container"
  
               
