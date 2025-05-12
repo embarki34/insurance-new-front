@@ -6,6 +6,7 @@
 
 /* Theme Variables */
 @theme inline {
+  /* Radii and Shadows (Kept from original) */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -15,6 +16,7 @@
   --shadow-md: 0 4px 6px oklch(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.2);
 
+  /* Color Semantic Mapping (Kept from original) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -48,136 +50,214 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Light Theme */
+/* ======================================== */
+/*          Professional Color Palette       */
+/* ======================================== */
+
+/* --- Light Theme --- */
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.15 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.55 0.2 270); /* Indigo */
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.9 0.05 240);
-  --secondary-foreground: oklch(0.15 0 0);
-  --muted: oklch(0.92 0.01 240);
-  --muted-foreground: oklch(0.45 0.05 20);
-  --accent: oklch(0.6 0.18 130); /* Teal */
-  --accent-foreground: oklch(0.15 0 0);
-  --destructive: oklch(0.55 0.25 25);
-  --border: oklch(0.88 0 0);
-  --input: oklch(0.92 0 0);
-  --ring: oklch(0.65 0 0);
-  --chart-1: oklch(0.66 0.2 41);
-  --chart-2: oklch(0.6 0.15 200);
-  --chart-3: oklch(0.4 0.08 230);
-  --chart-4: oklch(0.85 0.18 85);
-  --chart-5: oklch(0.78 0.18 70);
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.2 0 0);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.93 0.03 150);
-  --sidebar-accent-foreground: oklch(0.15 0 0);
-  --sidebar-border: oklch(0.88 0 0);
-  --sidebar-ring: oklch(0.65 0 0);
+  --radius: 0.5rem; /* Base radius - kept from original */
+
+  /* Neutrals - Slightly cool tint for cohesion */
+  --background: oklch(0.99 0.005 250); /* Almost white, very subtle cool tint */
+  --foreground: oklch(0.18 0.01 250); /* Dark gray, slight cool tint */
+  --card: oklch(1 0 0); /* Pure white for cards to pop slightly */
+  --card-foreground: oklch(0.18 0.01 250); /* Matches foreground */
+  --popover: oklch(1 0 0); /* Pure white */
+  --popover-foreground: oklch(0.18 0.01 250); /* Matches foreground */
+  --border: oklch(0.9 0.01 250); /* Light cool gray */
+  --input: oklch(0.92 0.01 250); /* Slightly lighter cool gray for inputs */
+  --ring: oklch(0.6 0.15 250); /* Primary blue for focus rings */
+
+  /* Primary - A professional, slightly desaturated blue */
+  --primary: oklch(0.6 0.15 250); /* Mid-tone blue, not too vibrant */
+  --primary-foreground: oklch(0.98 0.005 250); /* Very light, ensuring high contrast */
+
+  /* Secondary - Subtle gray-blue */
+  --secondary: oklch(0.93 0.02 250); /* Light gray-blue */
+  --secondary-foreground: oklch(0.3 0.02 250); /* Darker gray-blue for text */
+
+  /* Muted - Very subtle gray for less emphasis */
+  --muted: oklch(0.96 0.01 250); /* Very light gray-blue */
+  --muted-foreground: oklch(0.5 0.015 250); /* Medium gray-blue text */
+
+  /* Accent - A contrasting but still professional teal/cyan */
+  --accent: oklch(0.7 0.1 190); /* Muted cyan/teal */
+  --accent-foreground: oklch(0.15 0.01 190); /* Dark cyan text */
+
+  /* Destructive - Standard red */
+  --destructive: oklch(0.6 0.2 25); /* Clear red for warnings/errors */
+  --destructive-foreground: oklch(0.98 0.005 25); /* Light color for contrast */
+
+  /* Charts - Harmonized palette */
+  --chart-1: oklch(0.6 0.15 250); /* Primary blue */
+  --chart-2: oklch(0.7 0.1 190); /* Accent cyan/teal */
+  --chart-3: oklch(0.65 0.18 300); /* A contrasting purple */
+  --chart-4: oklch(0.75 0.15 130); /* A gentle green */
+  --chart-5: oklch(0.7 0.16 50); /* A warm orange */
+
+  /* Sidebar - Using primary/secondary scheme or distinct neutrals */
+  --sidebar: oklch(0.97 0.005 250); /* Slightly off-white, cool tint */
+  --sidebar-foreground: oklch(0.3 0.02 250); /* Darker gray-blue text */
+  --sidebar-primary: var(--primary); /* Use main primary */
+  --sidebar-primary-foreground: var(--primary-foreground); /* Use main primary foreground */
+  --sidebar-accent: oklch(0.92 0.015 250); /* Highlight background for active items */
+  --sidebar-accent-foreground: oklch(0.18 0.01 250); /* Dark text for highlighted items */
+  --sidebar-border: oklch(0.9 0.01 250); /* Matches main border */
+  --sidebar-ring: var(--ring); /* Matches main ring */
 }
 
-/* Dark Theme */
+/* --- Dark Theme --- */
 .dark {
-  --background: oklch(0.10 0 0);
-  --foreground: oklch(0.94 0 0);
-  --card: oklch(0.15 0 0);
-  --card-foreground: oklch(0.94 0 0);
-  --popover: oklch(0.15 0 0);
-  --popover-foreground: oklch(0.94 0 0);
-  --primary: oklch(0.88 0.15 270);
-  --primary-foreground: oklch(0.1 0 0);
-  --secondary: oklch(0.35 0.05 240);
-  --secondary-foreground: oklch(0.94 0 0);
-  --muted: oklch(0.25 0.02 240);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.4 0.1 130);
-  --accent-foreground: oklch(0.94 0 0);
-  --destructive: oklch(0.6 0.23 27);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0 0);
-  --chart-1: oklch(0.5 0.23 265);
-  --chart-2: oklch(0.65 0.17 160);
-  --chart-3: oklch(0.75 0.18 70);
-  --chart-4: oklch(0.62 0.26 300);
-  --chart-5: oklch(0.65 0.24 16);
-  --sidebar: oklch(0.18 0 0);
-  --sidebar-foreground: oklch(0.94 0 0);
-  --sidebar-primary: oklch(0.5 0.23 265);
-  --sidebar-primary-foreground: oklch(0.94 0 0);
-  --sidebar-accent: oklch(0.35 0.05 240);
-  --sidebar-accent-foreground: oklch(0.94 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.6 0 0);
+  /* Neutrals - Dark cool grays */
+  --background: oklch(0.15 0.01 250); /* Dark cool gray */
+  --foreground: oklch(0.96 0.005 250); /* Very light cool gray */
+  --card: oklch(0.2 0.015 250); /* Slightly lighter dark cool gray */
+  --card-foreground: oklch(0.96 0.005 250); /* Matches foreground */
+  --popover: oklch(0.22 0.018 250); /* Slightly lighter than card */
+  --popover-foreground: oklch(0.96 0.005 250); /* Matches foreground */
+  --border: oklch(0.3 0.02 250); /* Medium-dark cool gray */
+  --input: oklch(0.3 0.02 250); /* Matches border */
+  --ring: oklch(0.7 0.18 250); /* Brighter primary blue for focus rings */
+
+  /* Primary - Lighter blue for visibility on dark background */
+  --primary: oklch(0.7 0.18 250); /* Lighter, slightly more saturated blue */
+  --primary-foreground: oklch(0.15 0.01 250); /* Dark blue text for contrast */
+
+  /* Secondary - Muted dark blue */
+  --secondary: oklch(0.3 0.04 250); /* Dark, desaturated blue */
+  --secondary-foreground: oklch(0.9 0.01 250); /* Light gray-blue text */
+
+  /* Muted - Very dark gray */
+  --muted: oklch(0.25 0.015 250); /* Very dark cool gray */
+  --muted-foreground: oklch(0.65 0.01 250); /* Medium-light gray text */
+
+  /* Accent - Brighter teal for dark mode contrast */
+  --accent: oklch(0.75 0.12 190); /* Brighter cyan/teal */
+  --accent-foreground: oklch(0.1 0.01 190); /* Dark cyan text */
+
+  /* Destructive - Slightly lighter red for dark mode */
+  --destructive: oklch(0.65 0.22 25); /* Slightly lighter red */
+  --destructive-foreground: oklch(0.98 0.005 25); /* Light color for contrast */
+
+  /* Charts - Adjusted for dark background */
+  --chart-1: oklch(0.7 0.18 250); /* Primary blue (dark mode version) */
+  --chart-2: oklch(0.75 0.12 190); /* Accent cyan/teal (dark mode version) */
+  --chart-3: oklch(0.7 0.2 300); /* Brighter purple */
+  --chart-4: oklch(0.8 0.17 130); /* Brighter green */
+  --chart-5: oklch(0.75 0.18 50); /* Brighter orange */
+
+  /* Sidebar - Dark theme adaptation */
+  --sidebar: oklch(0.18 0.01 250); /* Slightly different dark bg */
+  --sidebar-foreground: oklch(0.8 0.01 250); /* Lighter gray text than main foreground */
+  --sidebar-primary: var(--primary); /* Use main dark primary */
+  --sidebar-primary-foreground: var(--primary-foreground); /* Use main dark primary foreground */
+  --sidebar-accent: oklch(0.28 0.03 250); /* Dark blue highlight background */
+  --sidebar-accent-foreground: oklch(0.96 0.005 250); /* Light text for highlighted items */
+  --sidebar-border: oklch(0.3 0.02 250); /* Matches main dark border */
+  --sidebar-ring: var(--ring); /* Matches main dark ring */
 }
 
-/* Base Layer */
+
+/* ======================================== */
+/*               Base Layer                */
+/* ======================================== */
+
+/* Base Layer (Kept from original, but check font) */
 @layer base {
   *,
   *::before,
   *::after {
     box-sizing: border-box;
-    @apply border-border outline-ring/50;
+    /* Use CSS variables for border and outline */
+    border-color: var(--color-border);
+    outline-color: oklch(from var(--color-ring) l c h / 50%); /* Use oklch alpha */
   }
 
   html {
-    font-family: 'Cairo', sans-serif;
+    /* Consider alternatives like Inter, Lato, Open Sans, Roboto for professional sites */
+    /* font-family: 'Inter', sans-serif; */
+    font-family: 'Cairo', sans-serif; /* Keep if specifically chosen */
     font-size: 16px;
-    font-weight: 300;
+    font-weight: 400; /* 300 can be quite thin, 400 is standard normal */
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased; /* Smoother fonts on WebKit */
+    -moz-osx-font-smoothing: grayscale; /* Smoother fonts on Firefox */
   }
 
   body {
     @apply bg-background text-foreground;
+    /* Ensure smooth color transitions */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
+
+/* ======================================== */
+/*         Component Specific Styles        */
+/* ======================================== */
+/* (Keep your existing component styles like datepicker, adjust if needed) */
+
 #validity_date {
   width: 150%;
-
 }
 
 #startDate {
   width: 370%;
-  
 }
 
 #endDate {
   width: 370%;
- 
 }
+
+/* Datepicker styles might need adjustment based on the new palette */
+/* Example: Use CSS variables */
 .react-datepicker__day-names {
-  background-color: white;
+  /* Consider a subtle background from the palette */
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  border-bottom: 1px solid var(--color-border);
 }
 .react-datepicker__current-month {
-  background-color: white;
+  background-color: var(--color-popover); /* Use popover background */
+  color: var(--color-popover-foreground); /* Use popover foreground */
   font-size: 12px !important;
+  padding-bottom: 8px; /* Add some spacing */
 }
 .react-datepicker__day {
-  background-color: rgb(245, 245, 245);
-  border-radius: 4px;
+  /* Use a subtle background, maybe card or muted */
+  background-color: transparent;
+  color: var(--color-popover-foreground);
+  border-radius: var(--radius-sm); /* Use theme radius */
   font-size: 12px !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.react-datepicker__day:hover {
+    background-color: var(--color-secondary); /* Use secondary for hover */
+    color: var(--color-secondary-foreground);
 }
 
-.react-datepicker__header  {
-  background-color: white !important;
+.react-datepicker__header {
+  background-color: var(--color-popover) !important; /* Use popover background */
+  border-bottom: none; /* Remove default border if popover has one */
   font-size: 12px !important;
 }
-.react-datepicker__day--selected {
-  background-color: #000000 !important;
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  background-color: var(--color-primary) !important; /* Use primary color */
+  color: var(--color-primary-foreground) !important; /* Use primary foreground */
 }
 .react-datepicker__day--keyboard-selected {
-  background-color: #b1b0b0 !important;
+  background-color: oklch(from var(--color-primary) l c h / 70%) !important; /* Slightly transparent primary */
+  color: var(--color-primary-foreground) !important;
 }
 .react-datepicker-popper {
-  background-color: white !important;
-  
+  /* Popover styles are likely handled by base styles if using a component library */
+  /* background-color: var(--color-popover) !important; */ /* Usually not needed */
+  z-index: 50; /* Ensure it's above other content */
 }
 
+/* Ensure navigation buttons use foreground color */
+.react-datepicker__navigation-icon::before {
+    border-color: var(--color-foreground);
+}
