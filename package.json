@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "build:css": "tailwindcss -i ./src/index.css  -o ./src/output.css --watch",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.4",

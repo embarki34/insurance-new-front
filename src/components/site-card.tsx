@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { getObjects } from "@/data/object.service";
 import { addBatiment } from "@/data/sites.service";
 import { toast   } from "sonner";
-import CreateObjects from "@/templates/objects/creatObjects";
+import CreateBatiment from "@/components/creatbatiment";
 
 // --- Helper Functions (Keep your existing ones) ---
 const formatDate = (dateString: string | null | undefined): string => {
@@ -234,74 +234,8 @@ function SiteCard({ site, onEdit }: SiteCardProps) {
                    Bâtiments ({batiments.length})
                  </div>
                </AccordionTrigger>
-               <Dialog open={isAddingObject} onOpenChange={setIsAddingObject}>
-                 <DialogTrigger asChild>
-                   <Button
-                     variant="outline"
-                     size="sm"
-                     className="mr-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                   >
-                     <Plus className="h-4 w-4" />
-                   </Button>
-                 </DialogTrigger>
-                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                   <DialogHeader>
-                     <DialogTitle>Add Batiments to Site</DialogTitle>
-                   </DialogHeader>
-                   <div className="grid gap-4 py-4">
-                     {objects.filter(object => object.objectType === 'batiment').map((object) => (
-                       <div
-                         key={object.id}
-                         className={cn(
-                           "flex items-center justify-between p-4 rounded-lg border transition-all cursor-pointer",
-                           selectedObjects.includes(object.id)
-                             ? "border-blue-500 bg-blue-50/50"
-                             : "hover:border-blue-300 hover:bg-blue-50/30"
-                         )}
-                         onClick={() => !isLoading && toggleObjectSelection(object.id)}
-                       >
-                         <div className="flex items-center gap-3">
-                           <div className={cn(
-                             "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                             selectedObjects.includes(object.id)
-                               ? "bg-blue-500 border-blue-500 text-white"
-                               : "border-slate-300"
-                           )}>
-                             {selectedObjects.includes(object.id) && <Check className="h-3 w-3" />}
-                           </div>
-                           <div>
-                             <h4 className="font-medium text-slate-900">
-                               Détails de l'objet :
-                             </h4>
-                             {object.details.map((detail, index) => (
-                               <p key={index} className="text-sm text-slate-500">
-                                 {detail.key}: {detail.value}
-                               </p>
-                             ))}
-                             <p className="text-sm text-slate-500">{object.objectType}</p>
-                           </div>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-
-                   <DialogFooter>
-                     <div className="flex justify-between items-center w-full">
-                       <span className="text-sm text-slate-500">
-                         {selectedObjects.length} batiment(s) selected
-                       </span>
-                       <Button
-                         onClick={handleAddSelectedObjects}
-                         disabled={isLoading || selectedObjects.length === 0}
-                       >
-                         {isLoading ? "Adding..." : "Add Selected Batiments"}
-                       </Button>
-                   <CreateObjects/>
-
-                     </div>
-                   </DialogFooter>
-                 </DialogContent>
-               </Dialog>
+               <CreateBatiment siteId={site.id} onEdit={onEdit}/>
+              
              </div>
              <AccordionContent className="pt-3 pb-1"> {/* Added padding */}
                {batiments.length === 0 ? (

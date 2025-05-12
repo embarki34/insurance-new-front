@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { createObjects } from "@/data/object.service"
 import { Checkbox } from "@/components/ui/checkbox"
 import { parameterInput } from "@/lib/input-Types"
+import { addBatiment } from "@/data/sites.service"
 
 // Value structure from the parameter data
 interface ParamValue {
@@ -60,11 +61,13 @@ interface NewFieldInput {
   label: string;
 }
 
-interface CreateObjectsProps {
+interface CreateBatimentProps {
   onObjectsCreated?: (objects: SimpleKeyValue[]) => void;
+  siteId: string;
+  onEdit: () => void;
 }
 
-const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
+const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProps) => {
   const [open, setOpen] = useState(false)
 
   // Parameters state
@@ -99,7 +102,7 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
       const response = await getParameters()
       // Convert the response to match our ParameterWithValues interface
       const formattedParameters = response
-        .filter(param => param.key !== "type_de_police" && param.key !== "compagnie_dassurance" && param.key !== "societe" && param.key !== "batiment")
+        .filter(param => param.key === "batiment") // Keep only batiment
         .map(param => {
           const formattedValues = Array.isArray(param.values) && typeof param.values[0] === 'string'
             ? (param.values as unknown as ParamValue[])
@@ -299,10 +302,26 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
       createObjects(formattedObjects)
         .then(response => {
           console.log("Created objects:", response);
+          
+          // Extract batiment IDs from response
+          const batimentIds = response.map((obj: any) => obj.id);
+          
+          // Add batiments to site
+          if (batimentIds.length > 0) {
+            addBatiment(siteId, batimentIds)
+              .then(() => {
+                toast.success(`${batimentIds.length} batiment(s) added successfully`);
+                onEdit();
+              })
+              .catch((error: Error) => {
+                console.error("Error adding batiments to site:", error);
+                toast.error("Failed to add batiments to site");
+              });
+          }
+
           if (onObjectsCreated) {
             onObjectsCreated(formattedObjects as unknown as SimpleKeyValue[]);
           }
-          toast.success("Objets créés avec succès");
 
           // Reset state
           setObjectValues([]);
@@ -329,13 +348,13 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="bg-primary hover:bg-primary/90 transition-colors">
-            <Plus className="mr-2 h-4 w-4" />
-            Créer des objets dynamiques
+            <Plus className=" h-4 w-4" />
+     
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-[95vw] max-h-[100vh] overflow-hidden p-6 bg-background shadow-lg rounded-lg">
           <DialogHeader className="pb-6 border-b">
-            <DialogTitle className="text-2xl font-bold">Créer des objets</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Créer un batiment</DialogTitle>
           </DialogHeader>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 h-[calc(90vh-12rem)]">
@@ -677,4 +696,4 @@ const CreateObjects = ({ onObjectsCreated }: CreateObjectsProps) => {
   )
 }
 
-export default CreateObjects
+export default CreateBatiment
