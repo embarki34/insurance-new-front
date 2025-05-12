@@ -11,4 +11,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    allowedHosts: ["https://assurance-test.condor.dz","http://assurance-test.condor.dz","assurance-test.condor.dz", "http://localhost:4173"],
+
+  }
 })

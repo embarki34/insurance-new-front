@@ -1,0 +1,14 @@
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+# .azure-pipelines/production-pipeline.yml
+trigger:
+  branches:
+    include:
+      - main
+
+extends:
+  template: ./deploy-template.yml
+  parameters:
+    environmentName: 'Production'
+    agentPool: 'prod-agent-pool'
+    vmImage: 'ubuntu-latest'

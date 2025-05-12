@@ -1,0 +1,15 @@
+
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+# .azure-pipelines/test-pipeline.yml
+trigger:
+  branches:
+    include:
+      - test
+
+extends:
+  template: ./deploy-template.yml
+  parameters:
+    environmentName: 'Test'
+    agentPool: 'test-agent-pool'
+    vmImage: 'ubuntu-latest'

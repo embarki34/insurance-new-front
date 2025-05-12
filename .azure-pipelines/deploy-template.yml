@@ -1,0 +1,68 @@
+# Common Deployment Template
+ 
+parameters:
+  - name: environmentName
+    type: string
+  - name: vmImage
+    type: string
+    default: "ubuntu-latest"
+  - name: agentPool
+    type: string
+ 
+stages:
+  - stage: BuildDockerImage
+    jobs:
+      - job: BuildImageJob
+        pool:
+          name: ${{ parameters.agentPool }}
+          vmImage: ${{ parameters.vmImage }}
+        steps:
+          - checkout: self
+         
+          - script: |
+              if docker image inspect litigation-backoffice:latest >/dev/null 2>&1; then
+                echo "Existing image found, creating backup..."
+                docker tag litigation-backoffice:latest litigation-backoffice:backup
+              else
+                echo "No existing image found, skipping backup..."
+              fi
+             
+              echo "Removing untagged litigation-backoffice images..."
+              docker images litigation-backoffice --filter "dangling=true" -q | xargs -r docker rmi
+            displayName: 'Backup Existing Docker Image and Clean Untagged Images'
+ 
+          - task: Docker@2
+            inputs:
+              command: 'build'
+              dockerfile: '**/Dockerfile'
+              repository: 'litigation-backoffice'
+              tags: |
+                latest
+            displayName: 'Build Docker Image'
+ 
+  - stage: Deploy
+    dependsOn: BuildDockerImage
+    condition: succeeded()
+    jobs:
+      - deployment: DeployJob
+        environment: ${{ parameters.environmentName }}
+        pool:
+          name: ${{ parameters.agentPool }}
+          vmImage: ${{ parameters.vmImage }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    echo "Checking for existing container..."
+                    if docker ps -a | grep -q litigation-backoffice; then
+                      echo "Removing existing container..."
+                      docker rm -f litigation-backoffice
+                    fi
+                   
+                    echo "Deploying Docker container..."
+                    docker run -d --name litigation-backoffice -p 4173:4173 litigation-backoffice:latest
+                  displayName: "Run Docker Container"
+ 
+              
+ 
