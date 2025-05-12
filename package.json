@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "vite --host .dist/index.html",
-    "dev": "vite",
+    "dev": "vite --host --port 3000",
     "build": "tsc -b && vite build",
     "build:css": "tailwindcss -i ./src/index.css  -o ./src/output.css --watch",
     "lint": "eslint .",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host --port 4174"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.4",
