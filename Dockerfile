@@ -12,15 +12,15 @@ COPY package*.json ./
 COPY . .
 
 # Install pnpm
-RUN npm install 
+RUN npm install -g pnpm
 
-
+RUN pnpm install
 
 # Build the application
-RUN npm run build
+RUN pnpm run build
 
 # Expose the port the app runs on
 EXPOSE 4173
 
 # Start the preview server
-CMD ["npm", "run", "preview"]
+CMD ["pnpm", "run", "preview"]
