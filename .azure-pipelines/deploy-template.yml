@@ -61,7 +61,7 @@ stages:
                     fi
                    
                     echo "Deploying Docker container..."
-                    docker run -d --name litigation-backoffice -p 4173:4173 litigation-backoffice:latest
+                    docker run -d --name litigation-backoffice -p 4174:4174 litigation-backoffice:latest
                   displayName: "Run Docker Container"
  
               
