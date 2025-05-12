@@ -123,8 +123,8 @@
   /* Set global font styles on html so they cascade to all elements */
   html {
     font-family: 'Cairo', sans-serif;
-    font-size: 16px;
-    font-weight: 300;
+    font-size: 18px;
+    font-weight: 400;
   }
 
   /* Apply background and text color to the body */
