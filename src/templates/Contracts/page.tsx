@@ -36,8 +36,12 @@ export default function Contracts() {
   }, [refresh])
 
   const handleDeleting = async (id: string) => {
+    const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer ce contrat ?");
+    if (!confirmDelete) return;
+
     try {
       await deleteContract(id)
+      
       setRefresh(!refresh)
       toast.success("Contrat supprimé avec succès")
 
