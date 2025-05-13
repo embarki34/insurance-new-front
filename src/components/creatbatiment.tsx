@@ -64,10 +64,11 @@ interface NewFieldInput {
 interface CreateBatimentProps {
   onObjectsCreated?: (objects: SimpleKeyValue[]) => void;
   siteId: string;
-  onEdit: () => void;
+  onEdit: () => void; 
+  oldBatiment: any[];
 }
 
-const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProps) => {
+const CreateBatiment = ({ onObjectsCreated, siteId, onEdit, oldBatiment }: CreateBatimentProps) => {
   const [open, setOpen] = useState(false)
   const [batimentType, setBatimentType] = useState("")
 
@@ -327,13 +328,16 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
           console.log("Created objects:", response);
           
           // Extract batiment IDs from response
-          const batimentIds = response.map((obj: any) => obj.id);
+          const newBatimentIds = response.map((obj: any) => obj.id);
+          
+          // Combine old and new batiment IDs
+          const allBatimentIds = [...oldBatiment.map((batiment: any) => batiment.id), ...newBatimentIds];
           
           // Add batiments to site
-          if (batimentIds.length > 0) {
-            addBatiment(siteId, batimentIds)
+          if (allBatimentIds.length > 0) {
+            addBatiment(siteId, allBatimentIds)
               .then(() => {
-                toast.success(`${batimentIds.length} batiment(s) added successfully`);
+                toast.success(`${newBatimentIds.length} batiment(s) added successfully`);
                 onEdit();
               })
               .catch((error: Error) => {
