@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { garantiesOutput } from "@/lib/output-Types";
+import { Ref } from 'react';
+import React from 'react';
 
 // Types
 export interface DragItem {
@@ -42,7 +44,7 @@ export const GarantieCard: React.FC<GarantieCardProps> = ({ garantie, index, sou
 
   return (
     <div
-      ref={drag}
+      ref={drag as any}
       className={cn(
         "p-3 rounded-lg border bg-card transition-colors",
         isDragging ? "opacity-50 border-dashed" : "hover:bg-accent/50",
@@ -98,7 +100,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ id, onDrop, children, classN
 
   return (
     <div
-      ref={drop}
+      ref={drop as any}
       className={cn(
         "min-h-[100px] rounded-lg border-2 transition-colors p-4 space-y-2",
         isOver && canDrop ? "border-primary/50 bg-primary/5" : "border-dashed border-muted-foreground/20",
