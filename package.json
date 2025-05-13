@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "vite --host .dist/index.html",
-    "dev": "vite --host --port 3000",
+    "dev": "vite --host ",
     "build": "tsc -b && vite build",
     "build:css": "tailwindcss -i ./src/index.css  -o ./src/output.css --watch",
     "lint": "eslint .",

@@ -342,6 +342,7 @@ export interface garantiesOutput {
   
   export interface Object {
     _id: string
+    objectName: string
     objectType: string
     details: Detail[]
     updatedBy: string

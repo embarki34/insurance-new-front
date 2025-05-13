@@ -261,7 +261,7 @@ export default function Objects() {
               ) : (
                 <div className="p-6">
                   <TableComponent
-                    objects={mapToTableFormat(filteredObjects)}
+                    objects={filteredObjects}
                     onDelete={handleDeleting}
                     isLoading={isLoading}
                   />

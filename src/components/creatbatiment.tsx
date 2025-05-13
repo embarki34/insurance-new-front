@@ -42,7 +42,7 @@ interface ObjectValue {
     customValue: string;
   }[];
   id: string;
-  selectedFields: string[]; // Track which fields are selected for this object
+  selectedFields: string[];
 }
 
 // Temporary parameter value inputs for form
@@ -69,6 +69,7 @@ interface CreateBatimentProps {
 
 const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProps) => {
   const [open, setOpen] = useState(false)
+  const [batimentType, setBatimentType] = useState("")
 
   // Parameters state
   const [parameters, setParameters] = useState<ParameterWithValues[]>([])
@@ -89,10 +90,19 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
   // Action states
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Add batiment types
+  const batimentTypes = [
+    "Batiment Administrative",
+    "Uniter de Production",
+    "Depot de Stoke"
+  ]
+
   // Fetch parameters when component mounts
   useEffect(() => {
     if (open) {
       fetchParameters()
+      // Pre-select batiment parameter
+      setSelectedParameter("batiment")
     }
   }, [open])
 
@@ -234,6 +244,11 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
     const selectedParam = parameters.find(param => param.key === selectedParameter)
     if (!selectedParam) return
 
+    if (!batimentType) {
+      toast.error("Veuillez sélectionner un type de batiment")
+      return
+    }
+
     // Process the form values and group them by parameter
     const filledValues = Object.entries(parameterFormValues)
       .filter(([valueKey, value]) => value.trim() !== '' && selectedFields.includes(valueKey))
@@ -249,6 +264,13 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
       })
       .filter(Boolean) as { valueKey: string; valueLabel: string; customValue: string }[]
 
+    // Add batiment type as a value
+    filledValues.push({
+      valueKey: "type",
+      valueLabel: "Type de Batiment",
+      customValue: batimentType
+    })
+
     if (filledValues.length === 0) {
       toast.error("Veuillez remplir au moins un champ")
       return
@@ -261,15 +283,16 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
       objectName: objectName.trim(),
       values: filledValues,
       id: Date.now().toString(),
-      selectedFields: [...selectedFields] // Store selected fields with the object
+      selectedFields: [...selectedFields]
     }
 
     // Add the new parameter value object to the list
     setObjectValues(prev => [...prev, newObjectValue])
 
-    // Only reset the form values but keep the selected fields
+    // Reset form values but keep selected fields
     setParameterFormValues({})
     setObjectName("")
+    setBatimentType("")
 
     toast.success(`Nouveau objet ajouté avec succès`)
   }
@@ -383,7 +406,7 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
                                 <div className="space-y-1">
                                   <h4 className="font-medium text-sm">{objectValue.objectName}</h4>
                                   <Badge className="text-xs px-2 py-1">
-                                    {objectValue.paramLabel}
+                                    {objectValue.values.find(v => v.valueKey === "type")?.customValue || objectValue.paramLabel}
                                   </Badge>
                                 </div>
                                 <Button
@@ -430,16 +453,37 @@ const CreateBatiment = ({ onObjectsCreated, siteId, onEdit }: CreateBatimentProp
             <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
               <Card className="flex-1 border-none shadow-none bg-muted/30 overflow-hidden flex flex-col">
                 <CardContent className="p-4 flex flex-col h-full">
-                  <div className="items-center justify-between mb-4 ">
-                    <h3 className="text-lg font-semibold mb-4">Nom de l'objet</h3>
-                    <div className="gap-2">
-                      <label htmlFor="objectName" className="text-sm font-medium mb-2">Nom de l'objet</label>
-                      <Input
-                        id="objectName"
-                        placeholder="Nom de l'objet"
-                        value={objectName}
-                        onChange={(e) => setObjectName(e.target.value)}
-                      />
+                  <div className="space-y-4 mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Type de Batiment</h3>
+                      <Select
+                        value={batimentType}
+                        onValueChange={setBatimentType}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Sélectionnez un type de batiment" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {batimentTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Nom de l'objet</h3>
+                      <div className="gap-2">
+                        <label htmlFor="objectName" className="text-sm font-medium mb-2">Nom de l'objet</label>
+                        <Input
+                          id="objectName"
+                          placeholder="Nom de l'objet"
+                          value={objectName}
+                          onChange={(e) => setObjectName(e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
 

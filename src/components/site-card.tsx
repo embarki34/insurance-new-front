@@ -50,58 +50,88 @@ interface BatimentDetailsProps {
 }
 
 const BatimentDetails = ({ batiment }: BatimentDetailsProps) => {
-  // Default values
   const details = batiment.details || [];
   const type = batiment.objectType || 'Inconnu';
+  const name = batiment.objectName || 'Sans nom';
 
-  // Extract specific details - adapt keys as needed based on your actual data
-  const findDetail = (keys: string[]) => details.find(d => keys.includes(d.key))?.value || 'N/A'; //to be handeld later 
-  const filterDetails = (prefixes: string[], excludeKeys: string[] = []) => details.filter(d =>
-      prefixes.some(p => d.key.startsWith(p)) && !excludeKeys.some(ex => d.key.endsWith(ex))
+  // Group details by category
+  const valueDetails = details.filter(d => d.key.includes('valeur'));
+  const typeDetails = details.filter(d => d.key === 'type');
+  const otherDetails = details.filter(d => 
+    !d.key.includes('valeur') && d.key !== 'type'
   );
 
-  const nom = findDetail(['nom', 'titre', 'name']); // Common keys for name/title
-  const generalDetails = details.filter(d =>
-      !['nom', 'titre', 'name', 'objectType'].includes(d.key) &&
-      !d.key.startsWith('coordonnees_') &&
-      !d.key.startsWith('informations_') &&
-      !d.key.startsWith('adresse_') // Example: exclude address parts if handled separately
-  );
-  const coordonnees = filterDetails(['coordonnees_']);
-  const informations = filterDetails(['informations_']);
+  const renderDetailList = (detailList: Detail[], title: string | null = null) => {
+    if (detailList.length === 0) return null;
 
-  const renderDetailList = (detailList: Detail[], title: string | null = null, prefixToRemove: string = '') => {
-      if (detailList.length === 0) return null;
-      return (
-          <>
-              {title && <dt className="col-span-full font-medium text-slate-600 mt-3 text-sm">{title}</dt>}
-              {detailList.map((detail, idx) => (
-                  <div key={`${detail.key}-${idx}`} className="contents">
-                      <dt className="text-xs text-slate-500 capitalize truncate pr-2">
-                          {detail.key.replace(prefixToRemove, '').replace(/_/g, ' ')}:
-                      </dt>
-                      <dd className="text-sm font-medium text-slate-800 break-words">
-                          {detail.value || <span className="text-slate-400">N/A</span>}
-                      </dd>
-                  </div>
-              ))}
-          </>
-      );
+    const formatDetailKey = (key: string) => {
+      return key
+        .replace(/_/g, ' ')
+        .replace(/^(valeurs|typede):?\s*/i, '')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    const formatDetailValue = (value: any) => {
+      if (value === null || value === undefined) return 'N/A';
+      
+      // Handle numeric values
+      if (!isNaN(value)) {
+        if (value > 1000) return value.toLocaleString('fr-FR');
+        return value.toString();
+      }
+
+      // Handle date strings
+      if (value.match(/^\d{4}-\d{2}-\d{2}/)) {
+        return formatDate(value);
+      }
+
+      return value;
+    };
+
+    return (
+      <div className="space-y-2">
+        {title && (
+          <dt className="col-span-full font-medium text-slate-700 mt-4 mb-2 text-sm border-b pb-1">
+            {title}
+          </dt>
+        )}
+        {detailList.map((detail, idx) => (
+          <div 
+            key={`${detail.key}-${idx}`} 
+            className="grid grid-cols-2 gap-2 py-1.5 px-3 rounded-md hover:bg-slate-50 transition-colors"
+          >
+            <dt className="text-xs font-medium text-slate-600 capitalize">
+              {formatDetailKey(detail.key)}
+            </dt>
+            <dd className="text-sm text-slate-800 font-medium text-right">
+              {formatDetailValue(detail.value)}
+            </dd>
+       
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
-      <div className="p-4 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200">
-          <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-base text-slate-900">{nom}</h4>
-              <Badge variant="secondary" className="text-xs">{type}</Badge>
-          </div>
-          <dl className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1.5 text-sm">
-              {renderDetailList(generalDetails)}
-              {renderDetailList(coordonnees, 'Coordonnées', 'coordonnees_')}
-              {renderDetailList(informations, 'Informations', 'informations_')}
-          </dl>
-          {details.length === 0 && <p className="text-sm text-slate-500 text-center py-2">Aucun détail disponible.</p>}
+    <div className="p-4 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="font-semibold text-base text-slate-900">{name}</h4>
+        <Badge variant="secondary" className="text-xs">{type}</Badge>
       </div>
+      <dl className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1.5 text-sm">
+        {renderDetailList(typeDetails, 'Type')}
+        {renderDetailList(valueDetails, 'Valeurs')}
+        {renderDetailList(otherDetails, 'Autres détails')}
+      </dl>
+      {details.length === 0 && (
+        <p className="text-sm text-slate-500 text-center py-2">
+          Aucun détail disponible.
+        </p>
+      )}
+    </div>
   );
 }
 

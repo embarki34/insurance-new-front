@@ -30,17 +30,10 @@ import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ScrollArea } from "@/components/ui/scroll-area"
-
-// Object type definition
-interface DynamicObject {
-  id: string;
-  name: string;
-  type: string;
-  properties: Record<string, string>;
-}
+import { ObjectOutput, Detail } from "@/lib/output-Types"
 
 interface TableComponentProps {
-  objects: DynamicObject[];
+  objects: ObjectOutput[];
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   isLoading?: boolean;
@@ -52,12 +45,13 @@ const TableComponent = ({
   onDelete,
   isLoading = false,
 }: TableComponentProps) => {
-  const [sortBy, setSortBy] = useState<keyof DynamicObject | "">('id')
+  const [sortBy, setSortBy] = useState<keyof ObjectOutput | "">('id')
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [selectedObject, setSelectedObject] = useState<DynamicObject | null>(null)
+  const [selectedObject, setSelectedObject] = useState<ObjectOutput | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  console.log("this is the objects", objects)
 
-  const handleSort = (column: keyof DynamicObject) => {
+  const handleSort = (column: keyof ObjectOutput) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
     } else {
@@ -68,22 +62,21 @@ const TableComponent = ({
 
   const sortedData = [...objects].sort((a, b) => {
     if (!sortBy || !a[sortBy] || !b[sortBy]) return 0
-    
-    if (sortBy === 'properties') {
-      // For properties object, we'll just compare the string representation
-      return sortOrder === "asc" 
-        ? JSON.stringify(a.properties).localeCompare(JSON.stringify(b.properties))
-        : JSON.stringify(b.properties).localeCompare(JSON.stringify(a.properties))
+
+    if (sortBy === 'details') {
+      const aDetails = a.details || []
+      const bDetails = b.details || []
+      return sortOrder === "asc"
+        ? JSON.stringify(aDetails).localeCompare(JSON.stringify(bDetails))
+        : JSON.stringify(bDetails).localeCompare(JSON.stringify(aDetails))
     }
-    
-    if (sortOrder === "asc") {
-      return String(a[sortBy]).localeCompare(String(b[sortBy]))
-    } else {
-      return String(b[sortBy]).localeCompare(String(a[sortBy]))
-    }
+
+    return sortOrder === "asc"
+      ? String(a[sortBy]).localeCompare(String(b[sortBy]))
+      : String(b[sortBy]).localeCompare(String(a[sortBy]))
   })
 
-  const openDetails = (obj: DynamicObject) => {
+  const openDetails = (obj: ObjectOutput) => {
     setSelectedObject(obj)
     setDetailsOpen(true)
   }
@@ -126,23 +119,26 @@ const TableComponent = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("name")}
+                onClick={() => handleSort("objectName")}
               >
                 <div className="flex items-center">
                   Nom
-                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "name" ? "opacity-100" : "opacity-50"}`} />
+                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "objectName" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("type")}
+                onClick={() => handleSort("objectType")}
               >
                 <div className="flex items-center">
-                  Type
-                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "type" ? "opacity-100" : "opacity-50"}`} />
+                  type
+                  <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "objectType" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
-              <TableHead>Propriétés</TableHead>
+              <TableHead>
+                  Type de batiment
+              </TableHead>
+              <TableHead>Détails</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -158,23 +154,31 @@ const TableComponent = ({
                     {object.id}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-medium">{object.name}</TableCell>
+                <TableCell className="font-medium">{object.objectName}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">
-                    {object.type}
+                    {object.objectType}
                   </Badge>
+
                 </TableCell>
                 <TableCell>
+                  <Badge variant="secondary" className="ml-2">
+                    {object.details?.filter(d => d.key === 'type').map(d => d.value)}
+                  </Badge>
+                </TableCell>
+
+
+                <TableCell>
                   <div className="flex flex-wrap gap-1 max-w-xs">
-                    {Object.entries(object.properties).slice(0, 2).map(([key, value], i) => (
+                    {(object.details || []).slice(0, 2).map((detail, i) => (
                       <Badge key={i} variant="outline" className="text-xs">
-                        {key}: {value}
+                        {detail.key}: {String(detail.value)}
                       </Badge>
                     ))}
-                    
-                    {Object.keys(object.properties).length > 2 && (
+
+                    {(object.details?.length || 0) > 2 && (
                       <Badge variant="outline" className="text-xs">
-                        +{Object.keys(object.properties).length - 2}
+                        +{(object.details?.length || 0) - 2}
                       </Badge>
                     )}
                   </div>
@@ -206,7 +210,7 @@ const TableComponent = ({
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => onEdit(object.id)} 
+                              onClick={() => onEdit(object.id)}
                               className="h-4 w-4"
                             >
                               <Pen className="h-8 w-8" />
@@ -269,6 +273,17 @@ const TableComponent = ({
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
+                        <p className="text-sm font-medium text-muted-foreground">Type</p>
+                        <p className="text-sm mt-1">
+                          <Badge variant="secondary">
+                            {selectedObject.objectType}
+                          </Badge>
+                          <Badge variant="secondary" className="ml-2">
+                            {selectedObject.details?.filter(d => d.key === 'type').map(d => d.value)}
+                          </Badge>
+                        </p>
+                      </div>
+                      <div>
                         <p className="text-sm font-medium text-muted-foreground">ID</p>
                         <p className="font-mono text-sm mt-1">
                           <Badge variant="outline" className="font-mono">
@@ -278,48 +293,73 @@ const TableComponent = ({
                       </div>
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Nom</p>
-                        <p className="text-sm mt-1">{selectedObject.name}</p>
+                        <p className="text-sm mt-1">{selectedObject.objectName}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">Type</p>
-                        <p className="text-sm mt-1">
-                          <Badge variant="secondary">
-                            {selectedObject.type}
-                          </Badge>
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">Date de création</p>
+                        <p className="text-sm mt-1">{new Date(selectedObject.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Dernière mise à jour</p>
+                        <p className="text-sm mt-1">{new Date(selectedObject.updatedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Properties */}
+                {/* Details */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Propriétés</CardTitle>
+                    <CardTitle className="text-lg">Détails</CardTitle>
                     <CardDescription>
-                      Toutes les propriétés définies pour cet objet
+                      Propriétés et caractéristiques détaillées
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Accordion type="single" collapsible defaultValue="item-0">
+                    <Accordion type="single" collapsible defaultValue="item-0" className="w-full">
                       <AccordionItem value="item-0">
-                        <AccordionTrigger>Voir toutes les propriétés</AccordionTrigger>
-                        <AccordionContent>
-                          <div className="border rounded-md overflow-hidden mt-2">
+                        <AccordionTrigger className="hover:bg-slate-50 px-4 py-2 rounded-lg transition-colors">
+                          <div className="flex items-center gap-2">
+                            <span>Voir tous les détails</span>
+                            <Badge variant="outline" className="ml-2">
+                              {selectedObject.details?.filter(d => d.key !== 'type').length || 0}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                          <div className="border rounded-lg overflow-hidden bg-slate-50/50">
                             <Table>
                               <TableHeader>
-                                <TableRow>
-                                  <TableHead className="text-center"> Clé</TableHead>
-                                  <TableHead className="text-center">Valeur</TableHead>
+                                <TableRow className="hover:bg-transparent">
+                                  <TableHead className="text-left font-semibold text-slate-700">Propriété</TableHead>
+                                  <TableHead className="text-right font-semibold text-slate-700">Valeur</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {Object.entries(selectedObject.properties).map(([key, value], index) => (
-                                  <TableRow key={index}>
-                                    <TableCell className="font-medium">{key}</TableCell>
-                                    <TableCell>{value}</TableCell>
+                                {(selectedObject.details || [])
+                                  .filter(detail => detail.key !== 'type')
+                                  .map((detail, index) => (
+                                    <TableRow key={index} className="hover:bg-slate-100 transition-colors">
+                                      <TableCell className="font-medium text-slate-900">
+                                        {detail.key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                        <Badge variant="secondary" className="font-mono">
+                                          {String(detail.value)}
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                {(!selectedObject.details || selectedObject.details.filter(d => d.key !== 'type').length === 0) && (
+                                  <TableRow>
+                                    <TableCell colSpan={2} className="text-center py-8">
+                                      <div className="flex flex-col items-center gap-2 text-slate-500">
+                                        <AlertCircle className="h-5 w-5" />
+                                        <p>Aucun détail disponible</p>
+                                      </div>
+                                    </TableCell>
                                   </TableRow>
-                                ))}
+                                )}
                               </TableBody>
                             </Table>
                           </div>

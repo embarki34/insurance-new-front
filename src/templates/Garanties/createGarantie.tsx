@@ -99,6 +99,18 @@ const CreateGarantie = ({ garantie, onSuccess }: CreateGarantieProps) => {
       if (garantie) {
         await updateGarantie(garantieData, garantie.id)
         toast.success("Garantie mise à jour avec succès")
+        setGarantieData({
+          code: "",
+          label: "",
+          description: "",
+          deductible: "",
+          guarantee_type: "",
+          rate: 0,
+          insurance_company: "",
+          validity_date: new Date(),
+          validity_duration_months: 12,
+          exclusions: [],
+        })
       } else {
         await createGarantie(garantieData)
         toast.success("Garantie créée avec succès")
