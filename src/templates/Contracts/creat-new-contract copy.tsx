@@ -9,8 +9,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { contractInput } from "@/lib/input-Types"
 import { createContract } from "@/data/contracts.service"
 import { getParameters } from "@/data/parameters.service"
-import { CompagnieOutput, garantiesOutput, InsuranceCampaniseOutput, ObjectOutput, parameter, ZoneOutput, ZoneDetailsOutput } from "@/lib/output-Types"
+import { CompagnieOutput, garantiesOutput, InsuranceCampaniseOutput, ObjectOutput, parameter } from "@/lib/output-Types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+// import { fr } from "date-fns/locale"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -20,7 +22,6 @@ import { getCompagnies } from "@/data/societes.service"
 import { getInsuranceCampanises } from "@/data/insuranceCampanise.service"
 import { getGaranties } from "@/data/garanties.service"
 import DatePicker from "react-datepicker"
-import { getZones, getZoneById } from "@/data/zone.service"
 
 // Status options
 const statusOptions = [
@@ -79,12 +80,6 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [objectGuarantees, setObjectGuarantees] = useState<{
     [objectId: string]: string[]
   }>({});
-
-  // Add new state for zones and sites
-  const [zones, setZones] = useState<ZoneOutput[]>([]);
-  const [selectedZone, setSelectedZone] = useState<string>("");
-  const [selectedZoneDetails, setSelectedZoneDetails] = useState<ZoneDetailsOutput | null>(null);
-  const [selectedSite, setSelectedSite] = useState<string>("");
 
   const steps = ["company", "police", "details"]
 
@@ -196,23 +191,15 @@ const AddContract = ({ onAdd }: AddContractProps) => {
     fetchObjects();
   }, [refetch]);
 
-  // Modify useEffect for filtering objects
+  // Filter objects when object type is selected
   useEffect(() => {
     if (selectedObjectType) {
-      if (selectedObjectType === "batiment") {
-        // For batiment type, objects are already filtered by site selection
-        if (!selectedSite) {
-          setFilteredObjects([]);
-        }
-      } else {
-        // For other types, use the existing filtering logic
-        const filtered = objects.filter(obj => obj.objectType === selectedObjectType);
-        setFilteredObjects(filtered);
-      }
+      const filtered = objects.filter(obj => obj.objectType === selectedObjectType);
+      setFilteredObjects(filtered);
     } else {
       setFilteredObjects([]);
     }
-  }, [selectedObjectType, objects, selectedSite]);
+  }, [selectedObjectType, objects]);
 
   // Handle object type selection
   const handleObjectTypeChange = (value: string) => {
@@ -376,65 +363,6 @@ const AddContract = ({ onAdd }: AddContractProps) => {
       ...prev,
       holderId: value
     }));
-  };
-
-  // Add useEffect to fetch zones
-  useEffect(() => {
-    const fetchZones = async () => {
-      try {
-        const zonesData = await getZones();
-        console.log("Fetched zones:", zonesData); // Add logging
-        setZones(zonesData);
-      } catch (error) {
-        console.error("Error fetching zones:", error);
-        toast.error("Erreur lors de la récupération des zones");
-      }
-    };
-
-    fetchZones();
-  }, []);
-
-  // Add useEffect to fetch zone details when a zone is selected
-  useEffect(() => {
-    const fetchZoneDetails = async () => {
-      if (selectedZone) {
-        try {
-          const zoneDetails = await getZoneById(selectedZone);
-          console.log("Fetched zone details:", zoneDetails); // Add logging
-          setSelectedZoneDetails(zoneDetails);
-        } catch (error) {
-          console.error("Error fetching zone details:", error);
-          toast.error("Erreur lors de la récupération des détails de la zone");
-        }
-      } else {
-        setSelectedZoneDetails(null);
-      }
-    };
-
-    fetchZoneDetails();
-  }, [selectedZone]);
-
-  // Add handler for zone selection
-  const handleZoneChange = (value: string) => {
-    console.log("Selected zone:", value); // Add logging
-    setSelectedZone(value);
-    setSelectedSite(""); // Reset site selection when zone changes
-    setSelectedObjectType(""); // Reset object type when zone changes
-    setFilteredObjects([]); // Reset filtered objects
-  };
-
-  // Add handler for site selection
-  const handleSiteChange = (value: string) => {
-    console.log("Selected site:", value); // Add logging
-    setSelectedSite(value);
-    // When site is selected, filter objects to show only batiments from this site
-    if (value && selectedZoneDetails) {
-      const site = selectedZoneDetails.sites.find(s => s.id === value);
-      if (site) {
-        console.log("Site batiments:", site.batiments); // Add logging
-        setFilteredObjects(site.batiments || []);
-      }
-    }
   };
 
   return (
@@ -790,138 +718,85 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
                         </div>
 
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="objectType" className="text-xs font-semibold mb-1 block">
-                              Type d'objet
-                            </Label>
-                            <Select
-                              value={selectedObjectType}
-                              onValueChange={handleObjectTypeChange}
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Sélectionnez un type d'objet" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[...new Set(objects.map(obj => obj.objectType))].map((objectType) => (
-                                  <SelectItem key={objectType} value={objectType}>
-                                    {objectType}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                        <div className="mb-4">
+                          <Label htmlFor="objectType" className="text-xs font-semibold mb-1 block">
+                            Type d'objet
+                          </Label>
+                          <Select
+                            value={selectedObjectType}
+                            onValueChange={handleObjectTypeChange}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Sélectionnez un type d'objet" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[...new Set(objects.map(obj => obj.objectType))].map((objectType) => (
+                                <SelectItem key={objectType} value={objectType}>
+                                  {objectType}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                          {/* Add zone and site selection for batiment type */}
-                          {selectedObjectType === "batiment" && (
-                            <div className="space-y-4 border-t pt-4">
-                              <div>
-                                <Label htmlFor="zone" className="text-xs font-semibold mb-1 block">
-                                  Zone
-                                </Label>
-                                <Select
-                                  value={selectedZone}
-                                  onValueChange={handleZoneChange}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Sélectionnez une zone" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {zones.map((zone) => (
-                                      <SelectItem key={zone.id} value={zone.id}>
-                                        {zone.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                        {/* Object list */}
+                        <div className="p-4 bg-muted/20 rounded-md">
+                          <h4 className="text-sm font-medium mb-3">Objets disponibles</h4>
 
-                              {selectedZone && selectedZoneDetails && (
-                                <div>
-                                  <Label htmlFor="site" className="text-xs font-semibold mb-1 block">
-                                    Site
-                                  </Label>
-                                  <Select
-                                    value={selectedSite}
-                                    onValueChange={handleSiteChange}
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Sélectionnez un site" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {selectedZoneDetails.sites.map((site) => (
-                                        <SelectItem key={site.id} value={site.id}>
-                                          {site.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Object list */}
-                          <div className="p-4 bg-muted/20 rounded-md">
-                            <h4 className="text-sm font-medium mb-3">Objets disponibles</h4>
-
-                            {selectedObjectType ? (
-                              selectedObjectType === "batiment" && !selectedSite ? (
-                                <div className="p-6 border rounded-md text-center bg-muted/5">
-                                  <p className="text-muted-foreground">Veuillez sélectionner une zone et un site</p>
-                                </div>
-                              ) : filteredObjects.length > 0 ? (
-                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                  {filteredObjects.map((object) => (
-                                    <div key={object.id} className="flex items-start border-b border-muted pb-2 last:border-0">
-                                      <Checkbox
-                                        id={`object-${object.id}`}
-                                        checked={selectedObjectIds.includes(object.id)}
-                                        onCheckedChange={(checked) =>
-                                          handleObjectSelection(object.id, checked as boolean)
-                                        }
-                                        className="mt-1 mr-3"
-                                      />
-                                      <div className="flex-1">
-                                        <Label
-                                          htmlFor={`object-${object.id}`}
-                                          className="font-medium cursor-pointer"
-                                        >
-                                          {object.details.find(d => d.key === "name")?.value ||
-                                            object.details.find(d => d.key === "titre")?.value ||
-                                            `Objet ${object.id.substring(0, 8)}`}
-                                        </Label>
-                                        <div className="text-sm text-muted-foreground mt-1">
-                                          {object.details.slice(0, 3).map((detail, index) => (
-                                            <div key={index} className="flex items-start">
-                                              <span className="font-medium min-w-24">{detail.key}:</span>
-                                              <span className="ml-2">{detail.value}</span>
-                                            </div>
-                                          ))}
-                                          {object.details.length > 3 && (
-                                            <div className="text-xs text-muted-foreground mt-1">
-                                              + {object.details.length - 3} autres attributs
-                                            </div>
-                                          )}
-                                        </div>
+                          {selectedObjectType ? (
+                            filteredObjects.length > 0 ? (
+                              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2" >
+                                {filteredObjects.map((object) => (
+                                  <div key={object.id} className="flex items-start border-b border-muted pb-2 last:border-0">
+                                    <Checkbox
+                                      id={`object-${object.id}`}
+                                      checked={selectedObjectIds.includes(object.id)}
+                                      onCheckedChange={(checked) =>
+                                        handleObjectSelection(object.id, checked as boolean)
+                                      }
+                                      className="mt-1 mr-3"
+                                    />
+                                    <div className="flex-1">
+                                      <Label
+                                        htmlFor={`object-${object.id}`}
+                                        className="font-medium cursor-pointer"
+                                      >
+                                        {object.details.find(d => d.key === "name")?.value ||
+                                          object.details.find(d => d.key === "titre")?.value ||
+                                          `Objet ${object.id.substring(0, 8)}`}
+                                      </Label>
+                                      <div className="text-sm text-muted-foreground mt-1">
+                                        {object.details.slice(0, 3).map((detail, index) => (
+                                          <div key={index} className="flex items-start">
+                                            <span className="font-medium min-w-24">{detail.key}:</span>
+                                            <span className="ml-2">{detail.value}</span>
+                                          </div>
+                                        ))}
+                                        {object.details.length > 3 && (
+                                          <div className="text-xs text-muted-foreground mt-1">
+                                            + {object.details.length - 3} autres attributs
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="p-6 border rounded-md text-center bg-muted/5">
-                                  <p className="text-muted-foreground">Aucun objet de ce type n'est disponible</p>
-                                  {showCreateObjectDialog && (
-                                    <CreateObjects onObjectsCreated={handleObjectCreated} />
-                                  )}
-                                </div>
-                              )
+                                  </div>
+                                ))}
+                              </div>
                             ) : (
                               <div className="p-6 border rounded-md text-center bg-muted/5">
-                                <p className="text-muted-foreground">Veuillez sélectionner un type d'objet</p>
+                                <p className="text-muted-foreground">Aucun objet de ce type n'est disponible</p>
+                                {showCreateObjectDialog && (
+                                  <CreateObjects
+                                    onObjectsCreated={handleObjectCreated}
+                                  />
+                                )}
                               </div>
-                            )}
-                          </div>
+                            )
+                          ) : (
+                            <div className="p-6 border rounded-md text-center bg-muted/5">
+                              <p className="text-muted-foreground">Veuillez sélectionner un type d'objet</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
