@@ -72,7 +72,7 @@ export default function Objects() {
     // Filter objects based on search query
     if (searchQuery) {
       const filtered = objects.filter(obj => 
-        obj.objectType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        obj.objectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         Object.values(obj.details).some(value => 
           value.value.toString().toLowerCase().includes(searchQuery.toLowerCase())
         )

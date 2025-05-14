@@ -108,7 +108,7 @@ const TableComponent = ({
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[50px] text-center">#</TableHead>
-              <TableHead
+              {/* <TableHead
                 className="cursor-pointer"
                 onClick={() => handleSort("id")}
               >
@@ -116,7 +116,7 @@ const TableComponent = ({
                   ID
                   <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "id" ? "opacity-100" : "opacity-50"}`} />
                 </div>
-              </TableHead>
+              </TableHead> */}
               <TableHead
                 className="cursor-pointer"
                 onClick={() => handleSort("objectName")}
@@ -149,11 +149,11 @@ const TableComponent = ({
                 className="hover:bg-muted/50 transition-colors"
               >
                 <TableCell className="text-center font-medium text-muted-foreground">{index + 1}</TableCell>
-                <TableCell className="font-mono text-sm">
+                {/* <TableCell className="font-mono text-sm">
                   <Badge variant="outline" className="font-mono">
                     {object.id}
                   </Badge>
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="font-medium">{object.objectName}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">
