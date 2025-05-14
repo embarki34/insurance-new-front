@@ -114,7 +114,7 @@ function TableComponent({
                 onClick={() => handleSort("id")}
               >
                 <div className="flex items-center">
-                  ID
+                  Policy Number
                   <ArrowUpDown className={`ml-2 h-4 w-4 ${sortBy === "id" ? "opacity-100" : "opacity-50"}`} />
                 </div>
               </TableHead>
@@ -129,10 +129,10 @@ function TableComponent({
               </TableHead>
               <TableHead>Insured Amount (DZD)</TableHead>
               <TableHead>Prime Amount (DZD)</TableHead>
-              <TableHead>Time Left</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
-              <TableHead className="text-left">Actions</TableHead>
+              <TableHead>Time Left</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -144,15 +144,21 @@ function TableComponent({
                 <TableCell className="text-center font-medium text-muted-foreground">{index + 1}</TableCell>
                 <TableCell className="font-mono text-sm">
                   <Badge variant="outline" className="font-mono">
-                    {contractItem.id}
+                    {contractItem.policyNumber}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-medium">{contractItem.type_id}</TableCell>
+                <TableCell className="font-medium">
+                  <span className="text-muted-foreground">
+                    <Badge variant="outline" className="font-mono">
+                      {contractItem.type_id}
+                    </Badge>
+                  </span>
+                </TableCell>
                 <TableCell className="font-medium">{contractItem.insuredAmount} DZD</TableCell>
                 <TableCell className="font-medium">{contractItem.primeAmount} DZD</TableCell>
-                <TableCell className="font-medium"><Badge variant="outline" className="font-mono">{handelTimeLeft(contractItem.startDate,contractItem.endDate)} days</Badge></TableCell>
                 <TableCell className="font-medium">{new Date(contractItem.startDate).toLocaleDateString("fr-FR")}</TableCell>
                 <TableCell className="font-medium">{new Date(contractItem.endDate).toLocaleDateString("fr-FR")}</TableCell>
+                <TableCell className="font-medium"><Badge variant="secondary" className="font-mono">{handelTimeLeft(contractItem.startDate,contractItem.endDate)} days</Badge></TableCell>
                 <TableCell>
                   <div className="flex space-x-2 space-x-reverse justify-end">
                     <TooltipProvider>
