@@ -1,26 +1,19 @@
-# Use an official Node runtime as the base image
 FROM node:18-alpine
 
-# Set the working directory in the container
 WORKDIR /usr/src/app
 
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Copy the rest of the application code
 COPY . .
 
-# Install pnpm
 RUN npm install -g pnpm
 
-RUN pnpm install
+# Optional: use a faster registry
+RUN pnpm config set registry https://registry.npmmirror.com
 
-# Build the application
+# Retry installation if it fails
+RUN for i in 1 2 3; do pnpm install && break || sleep 10; done
+
 RUN pnpm run build
 
-# Expose the port the app runs on
 EXPOSE 4173
-
-# Start the preview server
 CMD ["pnpm", "run", "preview"]
