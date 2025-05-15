@@ -34,7 +34,7 @@ const data = {
   },
   navMain: [
     {
-      title: "Contrats d'assurance",
+      title: "Gestion des contrats",
       url: "/contracts",
       icon: Briefcase,
     },

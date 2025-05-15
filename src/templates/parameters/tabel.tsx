@@ -236,7 +236,7 @@ function TableComponent({
                       </Tooltip>
                     </TooltipProvider>
 
-                    <TooltipProvider>
+                    {/* <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -252,9 +252,9 @@ function TableComponent({
                           <p>Modifier</p>
                         </TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
+                    </TooltipProvider> */}
 
-                    <TooltipProvider>
+                    {/* <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -270,7 +270,7 @@ function TableComponent({
                           <p>Supprimer</p>
                         </TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
+                    </TooltipProvider> */}
                   </div>
                 </TableCell>
               </TableRow>

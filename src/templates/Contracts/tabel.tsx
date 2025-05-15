@@ -11,25 +11,15 @@ import {
 } from "@/components/ui/table"
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+
 } from "@/components/ui/dialog"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Pen, Trash, AlertCircle, ArrowUpDown, Eye, X } from 'lucide-react'
 import Spinner from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { ScrollArea } from "@/components/ui/scroll-area"
+
 import { useNavigate } from "react-router-dom"
 import { contractOutput } from "@/lib/output-Types"
 import {
@@ -285,7 +275,11 @@ function TableComponent({
                       </Tooltip>
                     </TooltipProvider>
 
-                    <TooltipProvider>
+
+
+                    {/* after we complet the edit and delete we will add the tooltip */}
+
+                    {/* <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -301,7 +295,7 @@ function TableComponent({
                           <p>تعديل</p>
                         </TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
+                    </TooltipProvider> */}
 
                     <TooltipProvider>
                       <Tooltip>

@@ -31,9 +31,11 @@ import {
   Award,
   BanknoteIcon as Bank,
   Banknote,
+  Building2,
 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useParams } from "react-router-dom"
+import { InsuredObjectsTable } from "@/components/insured-objects-table"
 
 export default function ContractDetails() {
   const { id } = useParams()
@@ -231,19 +233,20 @@ export default function ContractDetails() {
               Objets assurés
             </TabsTrigger>
             <TabsTrigger
+              value="societe"
+              className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm rounded-lg"
+            >
+              <Building2 className="h-4 w-4 mr-2" />
+              Société Assurée
+            </TabsTrigger>
+            <TabsTrigger
               value="insurance"
               className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm rounded-lg"
             >
               <Building className="h-4 w-4 mr-2" />
-              Société d'assurance
+              Company D'assurance
             </TabsTrigger>
-            <TabsTrigger
-              value="societe"
-              className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm rounded-lg"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Société assurée
-            </TabsTrigger>
+           
           </TabsList>
 
           <TabsContent value="details" className="space-y-4 mt-6">
@@ -320,67 +323,7 @@ export default function ContractDetails() {
               </CardHeader>
               <CardContent className="pt-6">
                 {contract.insuredList.length > 0 ? (
-                  <div className="space-y-6">
-                    {contract.insuredList.map((insured, index) => (
-                      <div key={index} className="border rounded-lg p-4 bg-slate-50 shadow-sm">
-                        <h3 className="text-lg font-semibold mb-2 flex items-center text-slate-800">
-                          <Shield className="h-5 w-5 mr-2 text-cyan-600" />
-                          Objet assuré #{index + 1}
-                        </h3>
-                        <p className="text-sm text-slate-600 mb-2 flex items-center">
-                          <FileText className="h-4 w-4 mr-2 text-slate-500" />
-                          ID de l'objet : <span className="font-medium ml-1">{insured.object.objectType}</span>
-                        </p>
-                        <p className="text-sm text-slate-600 mb-4 flex items-center">
-                          <FileText className="h-4 w-4 mr-2 text-slate-500" />
-                          Détails : {insured.object.details.map((detail) => detail.value).join(", ")}
-                        </p>
-
-                        <h4 className="text-md font-medium mb-3 flex items-center text-slate-800">
-                          <Award className="h-5 w-5 mr-2 text-amber-600" />
-                          Garanties
-                        </h4>
-                        {insured.garanties.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {insured.garanties.map((garantie, gIndex) => (
-                              <div
-                                key={gIndex}
-                                className="border rounded-lg p-4 bg-white shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px]"
-                              >
-                                <div className="flex items-center mb-2">
-                                  <Shield className="h-5 w-5 mr-2 text-cyan-600" />
-                                  <h4 className="font-semibold text-lg text-cyan-700">
-                                    Code: <span className="font-normal text-slate-800">{garantie.code}</span>
-                                  </h4>
-                                </div>
-                                <h5 className="font-semibold text-md text-slate-700 mb-2">
-                                  Libellé: <span className="font-normal text-slate-800">{garantie.label}</span>
-                                </h5>
-                                <p className="font-medium text-slate-700 mb-1">
-                                  Description:{" "}
-                                  <span className="font-normal text-slate-600">{garantie.description}</span>
-                                </p>
-                                <p className="font-medium text-slate-700 mb-1">
-                                  Franchise: <span className="font-normal text-slate-600">{garantie.deductible}</span>
-                                </p>
-                                <p className="font-medium text-slate-700 mb-1">
-                                  Taux: <span className="font-normal text-slate-600">{garantie.rate}</span>
-                                </p>
-                                <p className="font-medium text-slate-700">
-                                  Durée de validité:{" "}
-                                  <span className="font-normal text-slate-600">
-                                    {garantie.validity_duration_months} mois
-                                  </span>
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Aucune garantie trouvée</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <InsuredObjectsTable insuredList={contract.insuredList} />
                 ) : (
                   <p className="text-muted-foreground flex items-center">
                     <AlertCircle className="h-4 w-4 mr-2" />
@@ -391,7 +334,7 @@ export default function ContractDetails() {
             </Card>
           </TabsContent>
 
-          lets add the num<TabsContent value="insurance" className="space-y-4 mt-6">
+          <TabsContent value="insurance" className="space-y-4 mt-6">
             <Card className="border-slate-200 shadow-md">
               <CardHeader className="">
                 <CardTitle className="flex items-center text-slate-800">
