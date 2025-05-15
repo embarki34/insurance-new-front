@@ -1,0 +1,22 @@
+{
+    "type_id": "type 2",
+    "insuranceCompanyId": "6825dfa43839ef46abf96849",
+    "policyNumber": "333",
+    "insuredAmount": 32,
+    "primeAmount": 46,
+    "societeId": "6825df6b3839ef46abf96843",
+    "insuredList": [
+      {
+        "object_id": "6825dfd43839ef46abf9688b",
+        "garanties": [
+          "6825dfb83839ef46abf96853",
+          "6825dff13839ef46abf96899"
+        ]
+      }
+    ],
+    "startDate": "2025-05-15T12:53:57.863Z",
+    "endDate": "2025-05-15T12:53:57.863Z",
+    "status": "active",
+    "policyDocument": null,
+    "holderId": "6825df6b3839ef46abf96843"
+  }

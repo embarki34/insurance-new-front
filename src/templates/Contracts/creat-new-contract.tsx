@@ -74,7 +74,7 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const [compagnie_dassurance, setCompagnie_dassurance] = useState<InsuranceCampaniseOutput[]>([]);
   const [garanties, setGaranties] = useState<garantiesOutput[]>([]);
   const [filteredGaranties, setFilteredGaranties] = useState<garantiesOutput[]>([]);
-
+  const [selectedCompany, setSelectedCompany] = useState<any>("");
 
   const [selectedSociete, setSelectedSociete] = useState<string>("");
   const [selectedCompagnie_dassurance, setSelectedCompagnie_dassurance] = useState<string>("");
@@ -307,7 +307,8 @@ const AddContract = ({ onAdd }: AddContractProps) => {
 
   useEffect(() => {
     if (selectedCompagnie_dassurance) {
-      const filtered = garanties.filter(g => g.insurance_company === selectedCompagnie_dassurance);
+      console.log(selectedCompagnie_dassurance)
+      const filtered = garanties.filter(g => g.insurance_company === selectedCompany.informations_generales.raison_sociale);
       setFilteredGaranties(filtered);
     } else {
       setFilteredGaranties([]);
@@ -418,6 +419,9 @@ const AddContract = ({ onAdd }: AddContractProps) => {
   const handleCompagnieChange = (value: string) => {
     setSelectedCompagnie_dassurance(value);
     const selectedCompany = compagnie_dassurance.find(c => c.id === value);
+    setSelectedCompany(selectedCompany);
+    
+    console.log("from handleCompagnieChange", selectedCompany)
     setContractData(prev => ({
       ...prev,
       insuranceCompanyId: selectedCompany?.id || ""
