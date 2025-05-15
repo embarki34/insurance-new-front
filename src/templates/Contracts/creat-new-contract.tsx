@@ -24,6 +24,7 @@ import { getZones, getZoneById } from "@/data/zone.service"
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { GarantieCard, DropZone, type DragItem } from '@/components/dnd/garantie-dnd'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 // Status options
 const statusOptions = [
@@ -937,64 +938,74 @@ const AddContract = ({ onAdd }: AddContractProps) => {
                                   <p className="text-muted-foreground">Veuillez sélectionner une zone et un site</p>
                                 </div>
                               ) : filteredObjects.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-3 space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                  {filteredObjects
-                                    .filter(object => {
-                                      const searchLower = searchQuery.toLowerCase();
-                                      const objectName = object.objectName?.toLowerCase() || '';
-                                      const typeDetail = object.details.find(d => d.key === "type");
-                                      const objectType = (typeDetail?.value?.toString() || '').toLowerCase();
-                                      return objectName.includes(searchLower) || objectType.includes(searchLower);
-                                    })
-                                    .map((object) => (
-                                      <div key={object.id} className=" flex items-start border-b border-muted pb-2 last:border-0">
-                                        <Checkbox
-                                          id={`object-${object.id}`}
-                                          checked={selectedObjectIds.includes(object.id)}
-                                          onCheckedChange={(checked) =>
-                                            handleObjectSelection(object.id, checked as boolean)
-                                          }
-                                          className="mt-1 mr-3"
-                                        />
-                                        <div className="flex-1 ">
-                                          <div className="flex items-center justify-between mb-2">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-12"></TableHead>
+                                      <TableHead>Nom</TableHead>
+                                      <TableHead>Type</TableHead>
+                                      <TableHead>Détails</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {filteredObjects
+                                      .filter(object => {
+                                        const searchLower = searchQuery.toLowerCase();
+                                        const objectName = object.objectName?.toLowerCase() || '';
+                                        const typeDetail = object.details.find(d => d.key === "type");
+                                        const objectType = (typeDetail?.value?.toString() || '').toLowerCase();
+                                        return objectName.includes(searchLower) || objectType.includes(searchLower);
+                                      })
+                                      .map((object) => (
+                                        <TableRow key={object.id}>
+                                          <TableCell>
+                                            <Checkbox
+                                              id={`object-${object.id}`}
+                                              checked={selectedObjectIds.includes(object.id)}
+                                              onCheckedChange={(checked) =>
+                                                handleObjectSelection(object.id, checked as boolean)
+                                              }
+                                            />
+                                          </TableCell>
+                                          <TableCell>
                                             <Label
                                               htmlFor={`object-${object.id}`}
-                                              className="font-medium cursor-pointer text-base"
+                                              className="font-medium cursor-pointer"
                                             >
                                               {object.objectName ||
                                                 `Objet ${object.id.substring(0, 8)}`}
                                             </Label>
+                                          </TableCell>
+                                          <TableCell>
                                             <Badge variant="secondary" className="text-xs">
                                               {object.details.find(d => d.key === "type")?.value}
                                             </Badge>
-                                          </div>
-                                          
-                                          <div className="bg-muted/10 rounded-lg p-3 mt-2">
-                                            <div className="grid grid-cols-2 gap-3">
-                                              {object.details.slice(0, 3).map((detail, index) => (
+                                          </TableCell>
+                                          <TableCell>
+                                            <div className="grid grid-cols-5 gap-2">
+                                              {object.details.slice(0, 5).map((detail, index) => (
                                                 detail.key !== "type" && (
-                                                  <div key={index} className="flex flex-col">
-                                                    <span className="text-xs text-muted-foreground capitalize">
-                                                      {detail.key}
-                                                    </span>
-                                                    <span className="font-medium text-sm">
+                                                  <div key={index} className="text-sm">
+                                                    <span className="text-muted-foreground capitalize">
+                                                      {detail.key}:
+                                                    </span>{' '}
+                                                    <span className="font-medium">
                                                       {detail.value}
                                                     </span>
                                                   </div>
                                                 )
                                               ))}
+                                              {object.details.length > 5 && (
+                                                <div className="text-xs text-muted-foreground italic col-span-2">
+                                                  + {object.details.length - 5} autres attributs
+                                                </div>
+                                              )}
                                             </div>
-                                            {object.details.length > 5 && (
-                                              <div className="text-xs text-muted-foreground mt-3 text-right italic">
-                                                + {object.details.length - 5} autres attributs
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                  </TableBody>
+                                </Table>
                               ) : (
                                 <div className="p-6 border rounded-md text-center bg-muted/5">
                                   <p className="text-muted-foreground">Aucun objet de ce type n'est disponible</p>

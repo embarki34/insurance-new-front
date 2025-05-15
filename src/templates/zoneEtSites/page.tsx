@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { Settings, Search, Paperclip, Filter, AlertCircle } from "lucide-react"
+import { Map, Search, Paperclip, Filter, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -98,11 +98,11 @@ function zoneEtSites() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Settings className="h-6 w-6 text-primary" />
-                <h2 className="text-2xl font-bold tracking-tight">Zones et Sites</h2>
+                <Map className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-bold tracking-tight">Emplacements</h2>
               </div>
               <p className="text-sm text-muted-foreground">
-                Ajouter, supprimer et gérer les zones et leurs sites associés.
+                Ajouter, supprimer et gérer les emplacements.
               </p>
             </div>
             <AddZone onAdd={handleAdd} />

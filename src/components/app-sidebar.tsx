@@ -44,7 +44,7 @@ const data = {
       icon: Box,
     },
     {
-      title: "Zones ",
+      title: "Emplacements",
       url: "/zone-et-sites",
       icon: Map,
     },

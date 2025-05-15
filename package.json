@@ -40,6 +40,8 @@
     "i18next-browser-languagedetector": "^8.0.4",
     "i18next-http-backend": "^3.0.2",
     "lucide-react": "^0.487.0",
+    "motion": "^12.11.3",
+    "nanoid": "^5.1.5",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-datepicker": "^8.3.0",

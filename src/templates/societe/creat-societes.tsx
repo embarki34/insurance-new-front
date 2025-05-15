@@ -11,6 +11,8 @@ import { Plus, Loader2, Check, Building, MapPin, CreditCard } from "lucide-react
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { createCompagnie, updateCompagnie } from "@/data/societes.service";
+import { getParameters } from "@/data/parameters.service";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // --- Assume API functions exist ---
 // import { createCompagnie, updateCompagnie } from "@/data/compagnie.service";
 // --- Mock functions if the real ones aren't ready ---
@@ -18,6 +20,12 @@ import { createCompagnie, updateCompagnie } from "@/data/societes.service";
 const createSociete = async (data: any) => await createCompagnie(data)
 const updateSociete = async (data: any, id: string) => await updateCompagnie(id, data)
 // --- End Mock ---
+
+
+
+
+
+
 
 // --- Define Helper Types ---
 type ContactRole = 'PDG' | 'DG' | 'DR' | 'DA';
@@ -57,29 +65,29 @@ interface CompagnieInput {
 export interface CompagnieOutput {
     id: string;
     informations_generales: {
-      raison_sociale: string;
-      forme_juridique: string;
-      numero_rc: string;
-      code_activite: string;
-      capital_social: string;
-      date_creation: string; // Can be string (ISO date) from backend
+        raison_sociale: string;
+        forme_juridique: string;
+        numero_rc: string;
+        code_activite: string;
+        capital_social: string;
+        date_creation: string; // Can be string (ISO date) from backend
     };
     coordonnees: {
-      adresse_direction_generale: string;
-      adresse_direction_regionale: string;
-      adresse_agence: string;
-      contacts: {
-        PDG: ContactEntry;
-        DG: ContactEntry;
-        DR: ContactEntry;
-        DA: ContactEntry;
-      };
-      site_web: string;
+        adresse_direction_generale: string;
+        adresse_direction_regionale: string;
+        adresse_agence: string;
+        contacts: {
+            PDG: ContactEntry;
+            DG: ContactEntry;
+            DR: ContactEntry;
+            DA: ContactEntry;
+        };
+        site_web: string;
     };
     informations_bancaires: {
-      nom_banque: string;
-      rib_ou_numero_compte: string;
-      devise_compte: string;
+        nom_banque: string;
+        rib_ou_numero_compte: string;
+        devise_compte: string;
     };
     createdAt: string;
     updatedAt: string;
@@ -94,8 +102,14 @@ interface ContactFieldsProps {
 }
 
 const ContactFields = ({ role, contactData, onChange }: ContactFieldsProps) => {
+
+    const [judicalForm, setJudicalForm] = useState<any>([])
+
     const roleTitles = { PDG: "Président Directeur Général", DG: "Directeur Général", DR: "Directeur Régional", DA: "Directeur d'Agence" };
     const handleInputChange = (field: keyof ContactEntry, value: string) => { onChange(role, field, value); };
+
+
+
 
     return (
         <div className="rounded-lg border p-4 bg-muted/20">
@@ -145,41 +159,55 @@ const defaultCompagnieData: CompagnieInput = {
     },
 };
 
+interface JudicialFormType {
+    id: string;
+    value: string;
+    label: string;
+}
+
 const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
     const [open, setOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("general");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [judicalForm, setJudicalForm] = useState<JudicialFormType[]>([]);
     const [companyData, setCompanyData] = useState<CompagnieInput>(
         JSON.parse(JSON.stringify(defaultCompagnieData)) // Deep clone default state
     );
 
+
+
     // Effect to load or reset form data
     useEffect(() => {
-        if (company) { // If editing existing company
+        if (company) {
             setOpen(true);
-            // Prepare data for the form state (CompagnieInput) from CompagnieOutput
             const formStateData: CompagnieInput = {
                 informations_generales: { ...company.informations_generales },
-                coordonnees: { ...company.coordonnees }, // Deep copy might be needed if contacts are mutable elsewhere
+                coordonnees: { ...company.coordonnees },
                 informations_bancaires: { ...company.informations_bancaires },
             };
 
+            // Validate forme_juridique exists in judicalForm
+            const isValidForm = judicalForm.some(form => form.value === formStateData.informations_generales.forme_juridique);
+            if (!isValidForm) {
+                formStateData.informations_generales.forme_juridique = '';
+            }
+
             // Ensure date format is YYYY-MM-DD for the input
-             if (formStateData.informations_generales.date_creation && typeof formStateData.informations_generales.date_creation === 'string') {
-                 try {
+            if (formStateData.informations_generales.date_creation && typeof formStateData.informations_generales.date_creation === 'string') {
+                try {
                     // Attempt to parse and format. Handle potential invalid dates.
                     const dateObj = new Date(formStateData.informations_generales.date_creation);
                     if (!isNaN(dateObj.getTime())) {
                         formStateData.informations_generales.date_creation = dateObj.toISOString().split('T')[0];
                     } else {
-                         formStateData.informations_generales.date_creation = defaultCompagnieData.informations_generales.date_creation; // Fallback
+                        formStateData.informations_generales.date_creation = defaultCompagnieData.informations_generales.date_creation; // Fallback
                     }
-                 } catch (e) {
-                     formStateData.informations_generales.date_creation = defaultCompagnieData.informations_generales.date_creation; // Fallback
-                 }
-             } else {
-                 formStateData.informations_generales.date_creation = defaultCompagnieData.informations_generales.date_creation;
-             }
+                } catch (e) {
+                    formStateData.informations_generales.date_creation = defaultCompagnieData.informations_generales.date_creation; // Fallback
+                }
+            } else {
+                formStateData.informations_generales.date_creation = defaultCompagnieData.informations_generales.date_creation;
+            }
 
             // Ensure all nested contact objects exist (important if source data might be incomplete)
             const defaultContacts = defaultCompagnieData.coordonnees.contacts;
@@ -192,15 +220,27 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
 
 
             setCompanyData(formStateData);
-            setActiveTab("general"); // Start on the first tab when editing
-        } else { // If creating a new company or closing/reopening
-            // Reset to default when opening for creation or if company prop becomes undefined
-             if (open) { // Only reset if dialog is intended to be open (avoids reset on initial mount)
-                 setCompanyData(JSON.parse(JSON.stringify(defaultCompagnieData)));
-                 setActiveTab("general");
-             }
+            setActiveTab("general");
+        } else {
+            if (open) {
+                setCompanyData(JSON.parse(JSON.stringify(defaultCompagnieData)));
+                setActiveTab("general");
+            }
         }
-    }, [company, open]); // Re-run when company changes or dialog opens/closes
+        const fetchParameters = async () => {
+            const parameters = await getParameters();
+            const formJuridiqueParam = parameters.filter((p: any) => p.key === "form_juridique")[0];
+            if (formJuridiqueParam?.values) {
+                const transformedValues: JudicialFormType[] = formJuridiqueParam.values.map((value: any) => ({
+                    id: value.key || value.id,
+                    value: value.value || value.key,
+                    label: value.label
+                }));
+                setJudicalForm(transformedValues);
+            }
+        };
+        fetchParameters();
+    }, [company, open]);
 
     // --- Handler for Contact Fields (memoized with useCallback) ---
     const handleContactChange = useCallback((role: ContactRole, field: keyof ContactEntry, value: string) => {
@@ -228,6 +268,11 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
             coordonnees: { ...prev.coordonnees, [field]: value }
         }));
     }, []);
+
+    // Add a handler for judicial form selection
+    const handleJudicialFormChange = (value: string) => {
+        handleFieldChange('informations_generales', 'forme_juridique', value);
+    };
 
     // --- Form Submission ---
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -271,11 +316,13 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
     const drContact = companyData.coordonnees?.contacts?.DR ?? defaultCompagnieData.coordonnees.contacts.DR;
     const daContact = companyData.coordonnees?.contacts?.DA ?? defaultCompagnieData.coordonnees.contacts.DA;
 
+
+
     return (
         <>
             {!company && ( // Show "Add" button only if not editing
                 <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/90">
-                    <Plus className="mr-2 h-4 w-4" /> Ajouter une compagnie
+                    <Plus className="mr-2 h-4 w-4" /> Ajouter une Société
                 </Button>
             )}
 
@@ -283,7 +330,7 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
                 <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold">
-                            {company ? "Modifier la compagnie" : "Ajouter une compagnie"}
+                            {company ? "Modifier la Société" : "Ajouter une Société"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -301,9 +348,30 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
                                 <Card><CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                         <div className="space-y-2"><Label htmlFor="raison_sociale">Raison Sociale*</Label><Input id="raison_sociale" placeholder="Nom de la compagnie" value={companyData.informations_generales.raison_sociale} onChange={(e) => handleFieldChange('informations_generales', 'raison_sociale', e.target.value)} required /></div>
-                                        <div className="space-y-2"><Label htmlFor="forme_juridique">Forme Juridique*</Label><Input id="forme_juridique" placeholder="SA, SARL, etc." value={companyData.informations_generales.forme_juridique} onChange={(e) => handleFieldChange('informations_generales', 'forme_juridique', e.target.value)} required /></div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="forme_juridique">Forme Juridique*</Label>
+                                            <Select 
+                                                value={companyData.informations_generales.forme_juridique} 
+                                                onValueChange={handleJudicialFormChange}
+                                                required
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Sélectionnez une forme juridique" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {judicalForm.map((form) => (
+                                                        <SelectItem 
+                                                            key={form.id} 
+                                                            value={form.value}
+                                                        >
+                                                            {form.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                         <div className="space-y-2"><Label htmlFor="numero_rc">Numéro RC*</Label><Input id="numero_rc" placeholder="Numéro RC" value={companyData.informations_generales.numero_rc} onChange={(e) => handleFieldChange('informations_generales', 'numero_rc', e.target.value)} required /></div>
-                                        <div className="space-y-2"><Label htmlFor="code_activite">Code Activité*</Label><Input id="code_activite" placeholder="Code NAF/APE..." value={companyData.informations_generales.code_activite} onChange={(e) => handleFieldChange('informations_generales', 'code_activite', e.target.value)} required /></div>
+                                        <div className="space-y-2"><Label htmlFor="code_activite">Activité Principale*</Label><Input id="code_activite" placeholder="Code NAF/APE..." value={companyData.informations_generales.code_activite} onChange={(e) => handleFieldChange('informations_generales', 'code_activite', e.target.value)} required /></div>
                                         <div className="space-y-2"><Label htmlFor="capital_social">Capital Social*</Label><Input id="capital_social" placeholder="Montant" value={companyData.informations_generales.capital_social} onChange={(e) => handleFieldChange('informations_generales', 'capital_social', e.target.value)} required /></div>
                                         <div className="space-y-2"><Label htmlFor="date_creation">Date de Création*</Label><Input id="date_creation" type="date" value={companyData.informations_generales.date_creation} onChange={(e) => handleFieldChange('informations_generales', 'date_creation', e.target.value)} required /></div>
                                     </div>
@@ -359,7 +427,7 @@ const CreateCompagnie = ({ company, onSuccess }: CreateCompagnieProps) => {
                                     </Button>
                                 </div>
                             </TabsContent>
-                            
+
 
                         </Tabs>
                     </form>

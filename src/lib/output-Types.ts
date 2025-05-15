@@ -1,21 +1,21 @@
 
 
-export type contractOutput = {
+
+export interface contractOutput {
   id: string
   type_id: string
-  insuranceCompanyId: string
+  insuranceCompany: InsuranceCompany
+  societe: Societe
   policyNumber: string
   insuredAmount: number
   primeAmount: number
-  holderId: string
   insuredList: InsuredList[]
   startDate: string
   endDate: string
   status: string
-  policyDocument: any
   createdAt: string
   updatedAt: string
-}   
+}
 
 
 export interface InsuredList {

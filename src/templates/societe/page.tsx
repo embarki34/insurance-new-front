@@ -138,14 +138,14 @@ export default function SocietePage() {
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-primary" />
-                  Liste des compagnies
+                  Liste des sociétés
                 </CardTitle>
                 <CardDescription>
                   {isLoading ? (
                     <Skeleton className="h-4 w-24 mt-1" />
                   ) : (
                     <span>
-                      {filteredCompanies.length} sur {companies.length} compagnies
+                      {filteredCompanies.length} sur {companies.length} sociétés
                     </span>
                   )}
                 </CardDescription>
@@ -156,7 +156,7 @@ export default function SocietePage() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Rechercher une compagnie..."
+                    placeholder="Rechercher une société..."
                     className="w-full pl-8 bg-background"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
@@ -219,7 +219,7 @@ export default function SocietePage() {
 
           <CardFooter className="flex items-center justify-between border-t p-4 bg-muted/30">
             <div className="text-sm text-muted-foreground">
-              Affichage de {filteredCompanies.length} sur {companies.length} compagnies
+              Affichage de {filteredCompanies.length} sur {companies.length} sociétés
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
