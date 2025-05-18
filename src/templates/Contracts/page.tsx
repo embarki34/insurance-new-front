@@ -154,7 +154,7 @@ export default function Contracts() {
         <Card className="overflow-hidden border-border/40 shadow-sm">
           <CardHeader className="bg-muted/50 pb-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
+              <div className="mt-4 ">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Paperclip className="h-4 w-4 text-primary" />
                   Liste des contrats d'assurance
@@ -170,7 +170,7 @@ export default function Contracts() {
                 </CardDescription>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <div className="flex flex-col sm:flex-row gap-2 mt-4 w-full md:w-auto">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input

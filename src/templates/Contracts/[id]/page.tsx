@@ -217,7 +217,7 @@ export default function ContractDetails() {
         </Card>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-100 p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-4 p-1 rounded-xl">
             <TabsTrigger
               value="details"
               className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm rounded-lg"
